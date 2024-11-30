@@ -18,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/oslabs-beta/CacheIQL/issues"
   },
-  "homepage": "https://github.com/oslabs-beta/CacheIQL#readme"
+  "homepage": "https://github.com/oslabs-beta/CacheIQL#readme",
+  "devDependencies": {
+    "@types/node": "^22.10.1"
+  },
+  "dependencies": {
+    "tsc": "^2.0.4"
+  }
 }
