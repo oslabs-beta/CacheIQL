@@ -1,0 +1,31 @@
+{
+  "name": "cacheiql-client",
+  "version": "1.0.0",
+  "description": "client side graphQL tool",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oslabs-beta/CacheIQL.git"
+  },
+  "keywords": [
+    "client",
+    "graphQL",
+    "OSP"
+  ],
+  "author": "Vasean Annin, George German, Gabriella Davoudpour, Pedram Kashani, Chris Matzen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oslabs-beta/CacheIQL/issues"
+  },
+  "homepage": "https://github.com/oslabs-beta/CacheIQL#readme",
+  "dependencies": {
+    "tsc": "^2.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  }
+}

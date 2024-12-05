@@ -1,0 +1,30 @@
+{
+  "name": "cacheiql-server",
+  "version": "1.0.0",
+  "description": "Server side cacheiql",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oslabs-beta/CacheIQL.git#readme"
+  },
+  "keywords": [
+    "graphQL",
+    "server",
+    "redis",
+    "OSP"
+  ],
+  "author": "Vasean Annin, George German, Gabriella Davoudpour, Pedram Kashani, Chris Matzen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oslabs-beta/CacheIQL/issues"
+  },
+  "homepage": "https://github.com/oslabs-beta/CacheIQL/tree/readme#readme",
+  "dependencies": {
+    "@types/node": "^22.10.1",
+    "tsc": "^2.0.4",
+    "typescript": "^5.7.2"
+  }
+}
