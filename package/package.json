@@ -1,0 +1,22 @@
+{
+  "name": "cacheiql",
+  "version": "1.0.0",
+  "description": "One stop tool for graphql",
+  "main": "index.js",
+  "scripts": {
+    "test": "Start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oslabs-beta/CacheIQL.git#dev"
+  },
+  "keywords": [
+    "GraphQl"
+  ],
+  "author": "Vasean Annin, George German, Pedram Kashni, Chris M, Gaby D, ",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oslabs-beta/CacheIQL/issues"
+  },
+  "homepage": "https://github.com/oslabs-beta/CacheIQL/tree/dev#readme"
+}
