@@ -1,3 +1,3 @@
-const rules = require('cacheiql');
+const test = require('cacheiql');
 
-console.log(rules(2));
+console.log(test(2));
