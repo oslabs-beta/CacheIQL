@@ -1,5 +1,5 @@
 import { ClientErrorType } from './types';
-const fs = require('fs');
+import fs from 'fs';
 const graphql = require('graphql');
 
 // import client error type
@@ -39,10 +39,10 @@ export const cacheiqIt = async (
 };
 
 // create function that handles saving data to local storage
-export const checkAndSaveToCache = (query: string, variables: object): string | void => {
-  if(!window) {
-    return 'Window not found';
-  }
+export const checkAndSaveToCache = (
+  query: string,
+  variables: object
+): string | void => {
   const key = generateKey(query, variables);
   const data = localStorage.getItem(query);
   if (data) {
@@ -50,8 +50,11 @@ export const checkAndSaveToCache = (query: string, variables: object): string | 
     return;
   } else {
     // invoke function that makes graphql query
-    // localStorage.setItem()
-    return undefined
+    localStorage.setItem(
+      query,
+      'data was succesfully stored within local storage'
+    );
+    return undefined;
   }
 };
 

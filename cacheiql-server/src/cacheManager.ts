@@ -1,4 +1,4 @@
-import { getRedisClient } from "./redisClient";
+import { getRedisClient } from './redisClient';
 
 interface CacheOptions {
   ttl?: number; // Time to live in seconds
