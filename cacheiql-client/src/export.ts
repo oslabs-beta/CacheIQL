@@ -5,8 +5,8 @@ import {
   checkAndSaveToCache,
 } from './index';
 
-const cacheIt = (testie: string): string => {
-  return testie;
+const cacheIt = (query: string, variables: object): string | void => {
+  return checkAndSaveToCache(query, variables);
 };
 
 module.exports = cacheIt;

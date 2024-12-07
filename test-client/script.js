@@ -1,2 +1,3 @@
-const test = require('cacheiql-client');
-console.log(test('Test is working'));
+const cacheIt = require('cacheiql-client');
+// import { cacheIt } from 'cacheiql-client';
+console.log(cacheIt('Test is working'));

@@ -39,7 +39,10 @@ export const cacheiqIt = async (
 };
 
 // create function that handles saving data to local storage
-export const checkAndSaveToCache = (query: string, variables: object): void => {
+export const checkAndSaveToCache = (query: string, variables: object): string | void => {
+  if(!window) {
+    return 'Window not found';
+  }
   const key = generateKey(query, variables);
   const data = localStorage.getItem(query);
   if (data) {
@@ -48,6 +51,7 @@ export const checkAndSaveToCache = (query: string, variables: object): void => {
   } else {
     // invoke function that makes graphql query
     // localStorage.setItem()
+    return undefined
   }
 };
 
