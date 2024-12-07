@@ -4,7 +4,8 @@
   "description": "client side graphQL tool",
   "main": "dist/export.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",

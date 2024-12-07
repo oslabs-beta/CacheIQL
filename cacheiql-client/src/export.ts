@@ -1,12 +1,7 @@
-import {
-  createClientError,
-  generateKey,
-  cacheiqIt,
-  checkAndSaveToCache,
-} from './index';
+import { cacheiqIt } from './index';
 
-const cacheIt = (query: string, variables: object): string | void => {
-  return checkAndSaveToCache(query, variables);
+const cacheIt = (endpoint: string, query: string, variables?: object): string | object | null | void => {
+  return cacheiqIt(endpoint, query, variables);
 };
 
 module.exports = cacheIt;

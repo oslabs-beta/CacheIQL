@@ -1,10 +1,10 @@
 import { ClientErrorType } from './types';
 import fs from 'fs';
-const graphql = require('graphql');
+import graphql from 'graphql';
 
 // import client error type
-//you want to import not export a type because it leads to more errors
-//const { ClientErrorType } = require('./types');
+// you want to import not export a type because it leads to more errors
+// const { ClientErrorType } = require('./types');
 
 // client error function
 export const createClientError = (message: string): ClientErrorType => {
@@ -16,7 +16,7 @@ export const createClientError = (message: string): ClientErrorType => {
 };
 
 // function that creates unique key for each query and response
-export const generateKey = (query: string, variables: object): string => {
+export const generateKey = (query: string, variables?: object): string => {
   return `${query}_${JSON.stringify(variables)}`;
 };
 
@@ -24,39 +24,53 @@ export const generateKey = (query: string, variables: object): string => {
 export const cacheiqIt = async (
   endpoint: string,
   query: string,
-  variables?: object
-): Promise<string> => {
+  variables?: object,
+): Promise<string | object | null | void> => {
   try {
-    // FINISH THIS PART
+    if(!checkAndSaveToCache(query)) {
+      const response: Object = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          // need to change this later to account for variables
+          "Content-Type": "Application/JSON",
+        },
+        body: JSON.stringify({
+          query
+        })
+      })
+      checkAndSaveToCache(query, response);
+      return response;
+    } else{
+      const response = localStorage.getItem(query);
+      return response;
+    }
+
   } catch (err) {
     if (err instanceof Error) {
       console.log('something wrong with fetching query!');
       return err.message;
     }
   }
-  // FIX THIS!!!!
-  return 'temp';
 };
 
 // create function that handles saving data to local storage
 export const checkAndSaveToCache = (
   query: string,
-  variables: object
-): string | void => {
+  response?: object,
+  variables?: object,
+): string | void | boolean => {
   const key = generateKey(query, variables);
   const data = localStorage.getItem(query);
   if (data) {
     console.log('found data!');
-    return;
-  } else {
-    // invoke function that makes graphql query
+    return true;
+  } else if (!data && response) {
     localStorage.setItem(
       query,
-      'data was succesfully stored within local storage'
+      JSON.stringify(response)
     );
     return undefined;
+  } else {
+    return false;
   }
 };
-
-// function that checks if query is stored in local storage
-// if so, grab that response and return it
