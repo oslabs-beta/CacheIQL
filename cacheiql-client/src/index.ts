@@ -1,43 +1,45 @@
-import { ClientErrorType } from "./types";
-
+import { ClientErrorType } from './types';
 const fs = require('fs');
-const graphql = require("graphql");
+const graphql = require('graphql');
 
 // import client error type
-const { ClientErrorType } = require('./types');
+//you want to import not export a type because it leads to more errors
+//const { ClientErrorType } = require('./types');
 
 // client error function
-const createClientError = (message: string): ClientErrorType => {
+export const createClientError = (message: string): ClientErrorType => {
   return {
     log: message,
     status: 400,
-    message: { err: 'Something went wrong in cacheqlIt fetch'}
-  }
-}
-
-
+    message: { err: 'Something went wrong in cacheqlIt fetch' },
+  };
+};
 
 // function that creates unique key for each query and response
-const generateKey = (query: string, variables: object): string => {
-  return `${query}_${JSON.stringify(variables)}`
-}
+export const generateKey = (query: string, variables: object): string => {
+  return `${query}_${JSON.stringify(variables)}`;
+};
 
 // function that makes fetch
-const cacheiqIt = async (endpoint: string, query: string, variables?: object ): Promise<string> => {
+export const cacheiqIt = async (
+  endpoint: string,
+  query: string,
+  variables?: object
+): Promise<string> => {
   try {
     // FINISH THIS PART
-  } catch(err) {
+  } catch (err) {
     if (err instanceof Error) {
-      console.log('something wrong with fetching query!')
+      console.log('something wrong with fetching query!');
       return err.message;
     }
   }
   // FIX THIS!!!!
-  return 'temp'
-}
+  return 'temp';
+};
 
 // create function that handles saving data to local storage
-const checkAndSaveToCache = (query: string, variables: object): void => {
+export const checkAndSaveToCache = (query: string, variables: object): void => {
   const key = generateKey(query, variables);
   const data = localStorage.getItem(query);
   if (data) {
@@ -47,10 +49,7 @@ const checkAndSaveToCache = (query: string, variables: object): void => {
     // invoke function that makes graphql query
     // localStorage.setItem()
   }
-
-}
+};
 
 // function that checks if query is stored in local storage
-  // if so, grab that response and return it
-
-
+// if so, grab that response and return it
