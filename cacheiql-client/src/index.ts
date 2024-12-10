@@ -48,13 +48,14 @@ export const cacheiqIt = async (
   } catch (err) {
     if (err instanceof Error) {
       console.log('something wrong with fetching query!');
-      return err.message;
+      return createClientError(err.message);
     }
   }
 };
 
 // create function that handles saving data to local storage
 export const checkAndSaveToCache = (
+  // potentially add type parameter to check for mutations
   query: string,
   response?: object,
   variables?: object,
@@ -70,7 +71,14 @@ export const checkAndSaveToCache = (
       JSON.stringify(response)
     );
     return undefined;
-  } else {
+  } 
+  // potentially add another else if to check if type is a mutation
+    // if so, invoke mutation updater function
+  else {
     return false;
   }
 };
+
+
+// function to check for mutation change / update query/response
+
