@@ -1,58 +1,38 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const historyApiFallback = require('connect-history-api-fallback');
-//const loader = require('sass-loader');
 module.exports = {
   mode: 'development',
-  entry: {
-    bundle: path.resolve(__dirname, 'src/index.js'),
-  },
+  entry: './src/client/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name][contenthash].js',
-    clean: true,
-    assetModuleFilename: '[name][ext]',
+    filename: 'main.js',
   },
-  devtool: 'source-map',
   devServer: {
+    port: '8080',
     static: {
-      directory: path.resolve(__dirname, 'dist'),
+      directory: path.join(__dirname, './dist'),
     },
-    liveReload: true,
-    //watchContentBase: true,
-    port: 8080,
     open: true,
     hot: true,
-    compress: true,
-    historyApiFallback: true,
+    liveReload: true,
   },
+
   module: {
     rules: [
       {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-      },
-      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
-      {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
-      },
-      {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|tsx|jsx|js)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-          },
-        },
+        use: ['ts-loader'],
       },
     ],
   },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'B.O.Bs List',
-      template: 'src/template.html',
+      template: './src/client/index.html',
+      filename: './index.html',
     }),
   ],
 };
