@@ -23,7 +23,12 @@
   },
   "homepage": "https://github.com/oslabs-beta/CacheIQL#readme",
   "dependencies": {
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/typescript-document-nodes": "^4.0.12",
     "graphql": "^16.9.0",
+    "graphql-tag": "^2.12.6",
+    "i": "^0.3.7",
+    "npm": "^10.9.2",
     "tsc": "^2.0.4"
   },
   "devDependencies": {
