@@ -31,6 +31,7 @@ export const cacheiqIt = async (
 ): Promise<string | object | null | void> => {
   try {
     if(!checkAndSaveToCache(query)) {
+      console.log('making your initial query!')
       const response: Object = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -44,6 +45,7 @@ export const cacheiqIt = async (
       checkAndSaveToCache(query, response);
       return response;
     } else{
+      console.log('query & response found in cache!')
       const response = localStorage.getItem(query);
       return response;
     }
@@ -56,7 +58,15 @@ export const cacheiqIt = async (
   }
 };
 
-export const mutationTypes: object = {
+// define an interface for the various mutation types
+export interface MutationTypeSpecifier {
+  delete: string[];
+  update: string[];
+  create: string[];
+}
+
+// mutationTypes must match setup of MutationTypeSpecifier
+export const mutationTypes: MutationTypeSpecifier = {
   delete: ['delete', 'remove'],
   update: ['update', 'edit'],
   create: ['create', 'add', 'new', 'make']
@@ -70,12 +80,15 @@ export const checkAndSaveToCache = (
   variables?: object,
 ): string | void | boolean => {
   const key = generateKey(query, variables);
-  const data = localStorage.getItem(query);
+  console.log(key)
 
+  /// got to here on testing, consider checking mutation vs query before checking storage etc 
+  const data = localStorage.getItem(query);
   // add checker to see if query type is a mutation
   try {
     // parse query using graphql-tag feature
     const parsedQuery: DocumentNode = gql`${query}`;
+    console.log(parsedQuery)
     // check if mutation is present in parsed query
     // check if any of the objects in definitions array has a mutation, return true if so
     const containsMutation: boolean = parsedQuery.definitions.some((definition) => 
@@ -98,10 +111,28 @@ export const checkAndSaveToCache = (
         }
       }
     })
-
       // target first keyword in typeofmutation to determine type
       // check to see what type of mutation
       // invoke respective handler function
+      if (mutationName !== null) {
+        let mutationString: string | null = null;
+        // go through mutationTypes object and store all keys as strings in an array
+        const arrayOfMutationTypes: Array<string> = Object.keys(mutationTypes);
+        // store first element in arrayOfMutationTypes that includes the action (CUD operation string)
+        const mutationAction: string = arrayOfMutationTypes.find((action) => 
+          // find value of action key in mutationTypes  
+          // see which value is included in the mutationName we took from mutation query
+         mutationTypes[action as keyof MutationTypeSpecifier].some((type: string) => mutationName?.includes(type))
+        ) as keyof MutationTypeSpecifier
+        console.log(typeof mutationAction)
+        
+        if (mutationAction) {
+          mutationHandler(mutationAction, query)
+        }
+        // if (mutationName.includes(mutationTypes[delete][0]))
+      } else {
+        return 'mutationName is not defined!'
+      }
     }
   } catch (err) {
     console.log('something went wrong when checking for mutations!')
@@ -126,9 +157,16 @@ export const checkAndSaveToCache = (
 };
 
 // function to handle mutation change update query/response
-export const mutationHandler = (key: string) => {
-  if (localStorage.hasOwnProperty(key)) {
+export const mutationHandler = (mutationType: string, mutationInfo: string) => {
+  if (localStorage.hasOwnProperty(mutationInfo)) {
 
   }
 }
+
+// this is what code would look liek if you wanted to use one of our custom fetch functions
+// write out code of implementation, use star wars api
+
+cacheiqIt("https://swapi.dev/api/people/1/", `type Query {
+  name
+}`)
 
