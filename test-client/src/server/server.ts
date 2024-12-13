@@ -1,5 +1,6 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
+const cors = require('cors');
 //const { buildSchema } = require('graphql');
 //keep as require call to avoid err
 //const db = require('./models/starWarsModels');
@@ -9,6 +10,7 @@ const rootValue = require('./schema/resolvers');
 
 const app = express();
 
+app.use(cors());
 app.use(
   '/graphql',
   graphqlHTTP({
