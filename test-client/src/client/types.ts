@@ -18,3 +18,9 @@ export type CharacterProps = {
 export type HitMissProps = {
   time: number;
 };
+
+
+export type ResponseObject = {
+  data: { people: object[] };
+};
+
