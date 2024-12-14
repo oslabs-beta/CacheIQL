@@ -1,6 +1,7 @@
 import CharacterCard from './CharacterCard';
 import { useState, useEffect } from 'react';
 import HitMiss from './HitMiss';
+
 import { cacheIt } from 'cacheiql-client';
 import { ResponseObject } from '../types';
 const Dashboard = () => {
@@ -33,6 +34,7 @@ const Dashboard = () => {
   };
 
   const getPeopleA = async () => {
+
     const startTime = performance.now();
     const response: any = await fetch('http://localhost:3000/graphql', {
       //Graphql Queries are performded as a post request
@@ -44,6 +46,7 @@ const Dashboard = () => {
       //body of the response/request
       body: JSON.stringify({
         query: `
+
       {
       people{
       _id
@@ -56,6 +59,7 @@ const Dashboard = () => {
       homeworld_id
       }
     }`,
+
       }),
     })
       .then((res) => res.json())
@@ -69,6 +73,7 @@ const Dashboard = () => {
 
   return (
     <>
+
       <button onClick={getPeopleB} className='getPeople'></button>
       <div className='hitmissbox'>
         <HitMiss time={time} />
@@ -78,10 +83,11 @@ const Dashboard = () => {
           <CharacterCard key={character._id} character={character} />
         ))}
       </div>
+
     </>
   );
 };
 
 export default Dashboard;
 
-//Previous fetch request:
+
