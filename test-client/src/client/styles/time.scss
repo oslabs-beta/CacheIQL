@@ -1,7 +1,16 @@
 .timebox {
-  margin: 20px;
-  padding: 30px;
-  border: 1px solid hsl(138, 86%, 56%);
+  margin: 15px;
+  background-color: white;
+  padding: 0.75rem;
+  border: 1px solid hsl(138, 74%, 77%);
   border-radius: 8px;
   box-shadow: 10px 10px 2px rgb(209, 209, 209);
 }
+
+.hitmissbox {
+  display: flex;
+  justify-content: end;
+  position: fixed;
+  z-index: 10;
+}
+
