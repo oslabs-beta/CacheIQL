@@ -5,8 +5,7 @@ export type ClientErrorType = {
 };
 
 export type Query =
-  | string
-  | null
   | {
       query: string;
-    };
+    }
+  | string;

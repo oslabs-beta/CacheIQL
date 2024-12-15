@@ -1,4 +1,4 @@
-import { ClientErrorType } from './types';
+import { ClientErrorType, Query } from './types';
 import gql from 'graphql-tag';
 import { visit } from 'graphql';
 //import fs from 'fs';
@@ -9,8 +9,8 @@ import { DocumentNode } from 'graphql';
 // you want to import not export a type because it leads to more errors
 // const { ClientErrorType } = require('./types');
 
-// client error function
-export const createClientError = (message: string): ClientErrorType => {
+// client error function//
+const createClientError = (message: string): ClientErrorType => {
   return {
     log: message,
     status: 400,
@@ -19,20 +19,26 @@ export const createClientError = (message: string): ClientErrorType => {
 };
 
 // function that creates unique key for each query and response
-export const generateKey = (query: string, variables?: object): string => {
+//Helper Function//
+const generateKey = (query: Query, variables?: object): string => {
   return `${query}_${JSON.stringify(variables)}`;
 };
 
 // function that makes fetch
 export const cacheiqIt = async (
   endpoint: string,
-  query: string | { query: string } | null,
+  query: Query,
   variables?: object
 ): Promise<string | object | null | void | JSON> => {
+  //error triggers if the query value is not a string
+  if (typeof query != 'string') {
+    if (typeof query.query != 'string') {
+      console.error(createClientError('the queries value must be a string'));
+    }
+  }
   if (query != null) {
     try {
-      if (!checkAndSaveToCache(query)) {
-        //console.log('making your initial query!');
+      if (!checkAndSaveToCache(query) && typeof query === 'object') {
         const response: any = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -43,14 +49,36 @@ export const cacheiqIt = async (
         })
           .then((res) => res.json())
           .then((data) => {
+            //error handling for if data contains an error
+            if (data.errors) {
+              console.error(data.errors[0]);
+              return;
+            }
+            console.log(data);
+
             checkAndSaveToCache(query, data);
             return data;
           });
+
         return response;
+      }
+      //this error triggers if query is not in the shape of an object
+      else if (typeof query != 'object') {
+        console.error(
+          createClientError(
+            'Query passed in is invalid please check to make sure its an object'
+          )
+        );
       } else {
         const queryString = typeof query === 'object' ? query.query : query;
+        //intead of storing the error object this returns early with the error
+        if (JSON.parse(localStorage.getItem(queryString)!).errors) {
+          console.error(
+            JSON.parse(localStorage.getItem(queryString)!).errors[0]
+          );
+          return;
+        }
         // console.log('query & response found in cache!');
-
         const response: any = JSON.parse(localStorage.getItem(queryString)!);
         return response;
       }
@@ -81,7 +109,7 @@ export const mutationTypes: MutationTypeSpecifier = {
 // create function that handles saving data to local storage
 export const checkAndSaveToCache = (
   // potentially add type parameter to check for mutations
-  query: string | { query: string } | null,
+  query: Query,
   response?: object,
   variables?: object
 ): string | void | boolean => {

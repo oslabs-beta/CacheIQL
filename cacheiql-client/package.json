@@ -30,9 +30,7 @@
     "graphql-tag": "^2.12.6",
     "i": "^0.3.7",
     "npm": "^10.9.2",
-    "tsc": "^2.0.4"
-  },
-  "devDependencies": {
+    "tsc": "^2.0.4",
     "@types/node": "^22.10.1",
     "typescript": "^5.7.2"
   }

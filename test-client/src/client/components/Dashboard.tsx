@@ -34,7 +34,6 @@ const Dashboard = () => {
   };
 
   const getPeopleA = async () => {
-
     const startTime = performance.now();
     const response: any = await fetch('http://localhost:3000/graphql', {
       //Graphql Queries are performded as a post request
@@ -59,7 +58,6 @@ const Dashboard = () => {
       homeworld_id
       }
     }`,
-
       }),
     })
       .then((res) => res.json())
@@ -73,7 +71,6 @@ const Dashboard = () => {
 
   return (
     <>
-
       <button onClick={getPeopleB} className='getPeople'></button>
       <div className='hitmissbox'>
         <HitMiss time={time} />
@@ -83,11 +80,8 @@ const Dashboard = () => {
           <CharacterCard key={character._id} character={character} />
         ))}
       </div>
-
     </>
   );
 };
 
 export default Dashboard;
-
-
