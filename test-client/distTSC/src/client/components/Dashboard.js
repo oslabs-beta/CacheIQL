@@ -18,11 +18,12 @@ const react_1 = require("react");
 const HitMiss_1 = __importDefault(require("./HitMiss"));
 const cacheiql_client_1 = require("cacheiql-client");
 const Dashboard = () => {
-    const [characterinfo, setCharacterinfo] = (0, react_1.useState)([]);
+    const peopleArray = [];
+    const [characterinfo, setCharacterinfo] = (0, react_1.useState)(peopleArray);
     const [time, setTime] = (0, react_1.useState)(0);
-    const getPeople = () => __awaiter(void 0, void 0, void 0, function* () {
+    const getPeopleB = () => __awaiter(void 0, void 0, void 0, function* () {
         const startTime = performance.now();
-        const response = (0, cacheiql_client_1.cacheIt)('http://localhost:3000/graphql', {
+        const response = yield (0, cacheiql_client_1.cacheIt)('http://localhost:3000/graphql', {
             query: `
             {
             people{
@@ -37,38 +38,44 @@ const Dashboard = () => {
             }
           }`,
         });
-        console.log('Checking for response', response);
-        // const response: any = await fetch('http://localhost:3000/graphql', {
-        //   //Graphql Queries are performded as a post request
-        //   method: 'POST',
-        //   //The type of body being sent is an application/json
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   //body of the response/request
-        //   body: JSON.stringify({
-        //     query: `
-        //       {
-        //       people{
-        //       _id
-        //       gender
-        //       birth_year
-        //       skin_color
-        //       hair_color
-        //       name
-        //       species_id
-        //       homeworld_id
-        //       }
-        //     }`,
-        //   }),
-        // })
-        //   .then((res) => res.json())
-        //   .then((data: any) => {
-        //     setCharacterinfo(data.data.people);
-        //     const endTime = performance.now();
-        //     setTime(endTime - startTime);
-        //   });
+        setCharacterinfo(response.data.people);
+        const endTime = performance.now();
+        setTime(endTime - startTime);
     });
-    return ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("button", { onClick: getPeople, className: 'getPeople' }), (0, jsx_runtime_1.jsx)(HitMiss_1.default, { time: time }), characterinfo.map((character) => ((0, jsx_runtime_1.jsx)(CharacterCard_1.default, { character: character }, character._id)))] }));
+    const getPeopleA = () => __awaiter(void 0, void 0, void 0, function* () {
+        const startTime = performance.now();
+        const response = yield fetch('http://localhost:3000/graphql', {
+            //Graphql Queries are performded as a post request
+            method: 'POST',
+            //The type of body being sent is an application/json
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            //body of the response/request
+            body: JSON.stringify({
+                query: `
+
+      {
+      people{
+      _id
+      gender
+      birth_year
+      skin_color
+      hair_color
+      name
+      species_id
+      homeworld_id
+      }
+    }`,
+            }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+            setCharacterinfo(data.data.people);
+            const endTime = performance.now();
+            setTime(endTime - startTime);
+        });
+    });
+    return ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("button", { onClick: getPeopleB, className: 'getPeople' }), (0, jsx_runtime_1.jsx)("div", { className: 'hitmissbox', children: (0, jsx_runtime_1.jsx)(HitMiss_1.default, { time: time }) }), (0, jsx_runtime_1.jsx)("div", { className: 'cardBox', children: characterinfo.map((character) => ((0, jsx_runtime_1.jsx)(CharacterCard_1.default, { character: character }, character._id))) })] }));
 };
 exports.default = Dashboard;
