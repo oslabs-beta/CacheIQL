@@ -1,7 +1,7 @@
 import CharacterCard from './CharacterCard';
 import { useState, useEffect } from 'react';
 import HitMiss from './HitMiss';
-const { cacheIt } = require('cacheiql-client/dist/index.js');
+const { cacheIt } = require('../../../../cacheiql-client/dist/index');
 import { ResponseObject } from '../types';
 const Dashboard = () => {
   const peopleArray: Array<object> = [];

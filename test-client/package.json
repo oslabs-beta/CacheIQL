@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@types/react": "^19.0.1",
+    "cacheiql-client": "^1.0.1",
     "cors": "^2.8.5",
     "css-loader": "^7.1.2",
     "express": "^4.21.2",
