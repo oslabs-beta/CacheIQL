@@ -38,6 +38,7 @@ const Dashboard = () => {
             }
           }`,
         });
+        console.log(response);
         setCharacterinfo(response.data.people);
         const endTime = performance.now();
         setTime(endTime - startTime);
