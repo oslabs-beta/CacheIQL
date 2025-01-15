@@ -11,10 +11,10 @@ const { cacheMiddleware } = require('../../../cacheiql-server/src/index');
 const app = express();
 
 const testOBJ = {
-  print:(string:string)=>{
-return string
-  }
-}
+  print: (string: string) => {
+    return string;
+  },
+};
 
 console.log('Root Values: ', rootValue); // Check if the resolvers are properly defined.
 
@@ -26,7 +26,7 @@ app.use(
     rootValue: Object.keys(rootValue).reduce((wrappedResolvers, key) => {
       console.log(`Wrapping resolver for ${key}`);
       const wrappedResolver = cacheMiddleware(rootValue[key]);
-      
+
       // Logging to make sure we're wrapping the function correctly
       console.log(`Wrapped resolver for ${key}: `, wrappedResolver);
 
@@ -41,5 +41,4 @@ app.use(
 
 app.listen(3000, () => console.log('listening on 3000'));
 
-
-console.log('middleware',cacheMiddleware)
+console.log('middleware', cacheMiddleware);
