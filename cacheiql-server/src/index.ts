@@ -1,5 +1,5 @@
-import { cacheQuery, getCachedQuery, invalidateCache } from "./cacheManager";
-import { GraphQLResolveInfo } from "graphql";
+import { setCacheQuery, getCachedQuery, invalidateCache } from './cacheManager';
+import { GraphQLResolveInfo } from 'graphql';
 
 export const cacheMiddleware =
   (resolve: any) =>
@@ -17,7 +17,7 @@ export const cacheMiddleware =
 
     // Execute resolver and cache the result
     const result = await resolve(root, args, context, info);
-    await cacheQuery(key, result);
+    await setCacheQuery(key, result);
     return result;
   };
 
