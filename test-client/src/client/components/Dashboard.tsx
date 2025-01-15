@@ -1,11 +1,39 @@
 import CharacterCard from './CharacterCard';
 import { useState, useEffect } from 'react';
 import HitMiss from './HitMiss';
-
+const { cacheIt } = require('cacheiql-client/dist/index.js');
+import { ResponseObject } from '../types';
 const Dashboard = () => {
-  const [characterinfo, setCharacterinfo] = useState([]);
+  const peopleArray: Array<object> = [];
+  const [characterinfo, setCharacterinfo] = useState(peopleArray);
   const [time, setTime] = useState(0);
-  const getPeople = async () => {
+  const getPeopleB = async () => {
+    const startTime: number = performance.now();
+    const response: ResponseObject = await cacheIt(
+      'http://localhost:3000/graphql',
+      {
+        query: `
+            {
+            people{
+            _id
+            gender
+            birth_year
+            skin_color
+            hair_color
+            name
+            species_id
+            homeworld_id
+            }
+          }`,
+      }
+    );
+    console.log(response);
+    setCharacterinfo(response.data.people);
+    const endTime: number = performance.now();
+    setTime(endTime - startTime);
+  };
+
+  const getPeopleA = async () => {
     const startTime = performance.now();
     const response: any = await fetch('http://localhost:3000/graphql', {
       //Graphql Queries are performded as a post request
@@ -17,18 +45,19 @@ const Dashboard = () => {
       //body of the response/request
       body: JSON.stringify({
         query: `
-          {
-          people{
-          _id
-          gender
-          birth_year
-          skin_color
-          hair_color
-          name
-          species_id
-          homeworld_id
-          }
-        }`,
+
+      {
+      people{
+      _id
+      gender
+      birth_year
+      skin_color
+      hair_color
+      name
+      species_id
+      homeworld_id
+      }
+    }`,
       }),
     })
       .then((res) => res.json())
@@ -42,11 +71,15 @@ const Dashboard = () => {
 
   return (
     <>
-      <button onClick={getPeople} className='getPeople'></button>
-      <HitMiss time={time} />
-      {characterinfo.map((character: any) => (
-        <CharacterCard key={character._id} character={character} />
-      ))}
+      <button onClick={getPeopleB} className='getPeople'></button>
+      <div className='hitmissbox'>
+        <HitMiss time={time} />
+      </div>
+      <div className='cardBox'>
+        {characterinfo.map((character: any) => (
+          <CharacterCard key={character._id} character={character} />
+        ))}
+      </div>
     </>
   );
 };
