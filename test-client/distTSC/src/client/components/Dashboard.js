@@ -16,14 +16,14 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const CharacterCard_1 = __importDefault(require("./CharacterCard"));
 const react_1 = require("react");
 const HitMiss_1 = __importDefault(require("./HitMiss"));
-const cacheiql_client_1 = require("cacheiql-client");
+const { cacheIt } = require('cacheiql-client/dist/index.js');
 const Dashboard = () => {
     const peopleArray = [];
     const [characterinfo, setCharacterinfo] = (0, react_1.useState)(peopleArray);
     const [time, setTime] = (0, react_1.useState)(0);
     const getPeopleB = () => __awaiter(void 0, void 0, void 0, function* () {
         const startTime = performance.now();
-        const response = yield (0, cacheiql_client_1.cacheIt)('http://localhost:3000/graphql', {
+        const response = yield cacheIt('http://localhost:3000/graphql', {
             query: `
             {
             people{
