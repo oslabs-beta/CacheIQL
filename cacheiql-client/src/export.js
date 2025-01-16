@@ -1,0 +1,190 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mutationHandler = exports.checkAndSaveToCache = exports.mutationTypes = exports.cacheiqIt = void 0;
+const graphql_tag_1 = __importDefault(require("graphql-tag"));
+const graphql_1 = require("graphql");
+// import client error type
+// you want to import not export a type because it leads to more errors
+// const { ClientErrorType } = require('./types');
+// client error function//
+const createClientError = (message) => {
+    return {
+        log: message,
+        status: 400,
+        message: { err: 'Something went wrong in cacheqlIt fetch' },
+    };
+};
+// function that creates unique key for each query and response
+//Helper Function//
+const generateKey = (query, variables) => {
+    return `${query}_${JSON.stringify(variables)}`;
+};
+// function that makes fetch
+const cacheiqIt = (endpoint, query, variables) => __awaiter(void 0, void 0, void 0, function* () {
+    //error triggers if the query value is not a string
+    if (typeof query != 'string') {
+        if (typeof query.query != 'string') {
+            console.error(createClientError('the queries value must be a string'));
+        }
+    }
+    if (query != null) {
+        try {
+            if (!(0, exports.checkAndSaveToCache)(query) && typeof query === 'object') {
+                const response = yield fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        // need to change this later to account for variables
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(query),
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                    //error handling for if data contains an error
+                    if (data.errors) {
+                        console.error(data.errors[0]);
+                        return;
+                    }
+                    console.log(data);
+                    (0, exports.checkAndSaveToCache)(query, data);
+                    return data;
+                });
+                return response;
+            }
+            //this error triggers if query is not in the shape of an object
+            else if (typeof query != 'object') {
+                console.error(createClientError('Query passed in is invalid please check to make sure its an object'));
+            }
+            else {
+                const queryString = typeof query === 'object' ? query.query : query;
+                //intead of storing the error object this returns early with the error
+                if (JSON.parse(localStorage.getItem(queryString)).errors) {
+                    console.error(JSON.parse(localStorage.getItem(queryString)).errors[0]);
+                    return;
+                }
+                // console.log('query & response found in cache!');
+                const response = JSON.parse(localStorage.getItem(queryString));
+                return response;
+            }
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                console.log('something wrong with fetching query!');
+                console.log(err);
+                // return createClientError(err.message);
+            }
+        }
+    }
+});
+exports.cacheiqIt = cacheiqIt;
+// mutationTypes must match setup of MutationTypeSpecifier
+exports.mutationTypes = {
+    delete: ['delete', 'remove'],
+    update: ['update', 'edit'],
+    create: ['create', 'add', 'new', 'make'],
+};
+// create function that handles saving data to local storage
+const checkAndSaveToCache = (
+// potentially add type parameter to check for mutations
+query, response, variables) => {
+    if (query === null) {
+        return 'query is null';
+    }
+    const queryString = typeof query === 'object' ? query.query : query;
+    const key = generateKey(queryString, variables);
+    //console.log(key);
+    /// got to here on testing, consider checking mutation vs query before checking storage etc
+    const data = localStorage.getItem(queryString);
+    // add checker to see if query type is a mutation
+    try {
+        // parse query using graphql-tag feature
+        const parsedQuery = (0, graphql_tag_1.default) `
+      ${query}
+    `;
+        //console.log(parsedQuery);
+        // check if mutation is present in parsed query
+        // check if any of the objects in definitions array has a mutation, return true if so
+        const containsMutation = parsedQuery.definitions.some((definition) => definition.kind === 'OperationDefinition' &&
+            definition.operation === 'mutation');
+        if (containsMutation) {
+            // parse query to extract name
+            let mutationName = null;
+            // traverse through AST
+            (0, graphql_1.visit)(parsedQuery, {
+                // this should be invoked whenever the visit function encounters an operation defintion node
+                // here, we create operation defintion key with associated method which is operationdefinition(node)
+                OperationDefinition(node) {
+                    // if the node is a mutation and the value of the name property in node is defined
+                    if (node.operation === 'mutation' && node.name) {
+                        // set mutationName to the value of the name key in the node
+                        mutationName = node.name.value;
+                    }
+                },
+            });
+            // target first keyword in typeofmutation to determine type
+            // check to see what type of mutation
+            // invoke respective handler function
+            if (mutationName !== null) {
+                let mutationString = null;
+                // go through mutationTypes object and store all keys as strings in an array
+                const arrayOfMutationTypes = Object.keys(exports.mutationTypes);
+                // store first element in arrayOfMutationTypes that includes the action (CUD operation string)
+                const mutationAction = arrayOfMutationTypes.find((action) => 
+                // find value of action key in mutationTypes
+                // see which value is included in the mutationName we took from mutation query
+                exports.mutationTypes[action].some((type) => mutationName === null || mutationName === void 0 ? void 0 : mutationName.includes(type)));
+                console.log(typeof mutationAction);
+                if (mutationAction) {
+                    (0, exports.mutationHandler)(mutationAction, queryString);
+                }
+                // if (mutationName.includes(mutationTypes[delete][0]))
+            }
+            else {
+                return 'mutationName is not defined!';
+            }
+        }
+    }
+    catch (err) {
+        console.log('something went wrong when checking for mutations!');
+    }
+    if (data) {
+        //console.log('found data!');
+        return true;
+    }
+    // potentially add another else if to check if type is a mutation
+    // if so, invoke mutation updater function
+    else if (!data && response) {
+        localStorage.setItem(queryString, JSON.stringify(response));
+        return undefined;
+    }
+    else {
+        return false;
+    }
+};
+exports.checkAndSaveToCache = checkAndSaveToCache;
+// function to handle mutation change update query/response
+const mutationHandler = (mutationType, mutationInfo) => {
+    if (localStorage.hasOwnProperty(mutationInfo)) {
+    }
+};
+exports.mutationHandler = mutationHandler;
+// this is what code would look liek if you wanted to use one of our custom fetch functions
+// write out code of implementation, use star wars api
+// cacheiqIt(
+//   'https://swapi.dev/api/people/1/',
+//   `type Query {
+//   name
+// }`
+// );
