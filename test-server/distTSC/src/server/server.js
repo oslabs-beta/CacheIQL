@@ -1,6 +1,7 @@
 "use strict";
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
+const { cacheMiddleware } = require('cacheiql-server');
 //const { buildSchema } = require('graphql');
 //keep as require call to avoid err
 //const db = require('./models/starWarsModels');
