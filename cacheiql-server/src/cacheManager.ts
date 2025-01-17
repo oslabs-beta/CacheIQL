@@ -11,6 +11,7 @@ let cacheMisses = 0;
  * @param data - The data to be cached.
  * @param options - Cache options (e.g., TTL).
  */
+
 export const setCacheQuery = async (
   key: string,
   data: any,
@@ -33,11 +34,10 @@ export const getCachedQuery = async (key: string): Promise<any | null> => {
     const cachedData = await client.get(`myApp:${key}`);
     if (cachedData) {
       cacheHits++;
-      return JSON.parse(cachedData)
+      return JSON.parse(cachedData);
     }
     cacheMisses++;
     return null;
-    
   } catch (error) {
     console.error(`Error retrieving cache for key "${key}":`, error);
     throw error;
@@ -56,19 +56,19 @@ export const invalidateCache = async (key: string) => {
 
 export const getData = async (key: string, fetchFromDb: () => Promise<any>) => {
   try {
-    const cacheData = await getCachedQuery(key)
+    const cacheData = await getCachedQuery(key);
     if (cacheData) {
-      console.log('returning data from cache')
-      return cacheData
+      console.log('returning data from cache');
+      return cacheData;
     }
-    const dbData = await fetchFromDb()
-    await setCacheQuery(key,dbData)
-    return dbData
+    const dbData = await fetchFromDb();
+    await setCacheQuery(key, dbData);
+    return dbData;
   } catch (error) {
-    console.error('Error fetching data', error)
-    throw error 
+    console.error('Error fetching data', error);
+    throw error;
   }
-}
+};
 // Example function to fetch data from a database (you would replace this with your actual database query logic)
 async function fetchFromDb() {
   // Simulating a database fetch (replace with actual DB query)

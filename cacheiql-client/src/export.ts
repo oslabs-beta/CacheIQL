@@ -2,7 +2,7 @@ import { ClientErrorType, Query } from './types';
 import gql from 'graphql-tag';
 import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
-import { MutationTypeSpecifier, mutationTypes} from './types'
+import { MutationTypeSpecifier, mutationTypes } from './types';
 // import client error type
 // you want to import not export a type because it leads to more errors
 
@@ -18,6 +18,7 @@ const createClientError = (message: string): ClientErrorType => {
 // Helper Function
 // creates unique key for each query and response
 const generateKey = (query: Query, variables?: object): string => {
+  query += 'IQL';
   return `${query}_${JSON.stringify(variables)}`;
 };
 
@@ -25,10 +26,11 @@ const generateKey = (query: Query, variables?: object): string => {
 export const cacheiqIt = async (
   endpoint: string,
   query: Query,
+  time?: number,
   variables?: object
 ): Promise<string | object | null | void | JSON> => {
-
-  if (typeof query !== 'string' || typeof query !== 'object') {
+  console.log(typeof query);
+  if (typeof query !== 'string' && typeof query !== 'object') {
     console.error(
       createClientError(
         'Query passed in is invalid. Please check to make sure its an object or string'
@@ -36,16 +38,19 @@ export const cacheiqIt = async (
     );
   }
 
-
-// check if query is an object
+  // check if query is an object
   if (typeof query === 'object') {
     // if an object is passed, check the query property to see if type is string
     if (typeof query.query !== 'string') {
-      console.error(createClientError('The value of query must be a string to make a proper GraphQL query.'));
+      console.error(
+        createClientError(
+          'The value of query must be a string to make a proper GraphQL query.'
+        )
+      );
     }
   }
 
-// logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
+  // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
   if (query !== null) {
     try {
       // if query is not cached, make fetch to DB
@@ -68,6 +73,7 @@ export const cacheiqIt = async (
             console.log(data);
             // cache newly fetched data
             checkAndSaveToCache(query, data);
+            cacheManager(query, time);
             return data;
           });
         return response;
@@ -88,13 +94,30 @@ export const cacheiqIt = async (
       }
     } catch (err) {
       if (err instanceof Error) {
-        console.log(`${err}, Something wrong with fetching query through GraphQL!`);
+        console.log(
+          `${err}, Something wrong with fetching query through GraphQL!`
+        );
         return createClientError(err.message);
       }
     }
   }
 };
 
+const cacheManager = (key: Query, time: number = 60) => {
+  //the number of time passed in is how long the cache will stay within local storage;
+
+  setTimeout(() => {
+    const query = typeof key === 'object' ? key.query : key;
+    for (let i = 0; i < localStorage.length; i++) {
+      if (localStorage.key(i) === query) {
+        console.log('1 second has passed');
+        localStorage.removeItem(query);
+        return;
+      }
+    }
+  }, time * 1000);
+  //deletes only cacheiql-client items from the local storage
+};
 
 // create function that handles saving data to local storage
 export const checkAndSaveToCache = (
@@ -103,7 +126,6 @@ export const checkAndSaveToCache = (
   response?: object,
   variables?: object
 ): string | void | boolean | object => {
-  
   if (query === null) {
     return 'query is null';
   }
@@ -113,75 +135,77 @@ export const checkAndSaveToCache = (
 
   /// got to here on testing, consider checking mutation vs query before checking storage etc
   const data = localStorage.getItem(queryString);
-  
+
   // add checker to see if query type is a mutation
-  try {
-    // parse query using graphql-tag feature (makes an AST)
-    const parsedQuery: DocumentNode = gql`${query}`;
-    // check if mutation is present in parsed query
-    // check if any of the objects in definitions array has a mutation, return true if so (some method returns a boolean)
-    const containsMutation: boolean = parsedQuery.definitions.some(
-      (definition) =>
-        definition.kind === 'OperationDefinition' &&
-        definition.operation === 'mutation'
-    );
+  // try {
+  //   // parse query using graphql-tag feature (makes an AST)
+  //   const parsedQuery: DocumentNode = gql`
+  //     ${query}
+  //   `;
+  //   // check if mutation is present in parsed query
+  //   // check if any of the objects in definitions array has a mutation, return true if so (some method returns a boolean)
+  //   const containsMutation: boolean = parsedQuery.definitions.some(
+  //     (definition) =>
+  //       definition.kind === 'OperationDefinition' &&
+  //       definition.operation === 'mutation'
+  //   );
 
-    // logic for checking what mutation is occurring and getting mutation type
-    if (containsMutation) {
-      // parse query to extract name
-      let mutationName: string | null = null;
-      // traverse through AST using graphql's visit function
-      visit(parsedQuery, {
-        // this should be invoked whenever the visit function encounters an operation defintion node
-        // here, we create operation defintion key with associated method which is operationdefinition(node)
-        OperationDefinition(node) {
-          // if the node is a mutation and the value of the name property in node is defined
-          if (node.operation === 'mutation' && node.name) {
-            // set mutationName to the value of the name key in the node
-            mutationName = node.name.value;
-          }
-        },
-      });
-      // target first keyword in typeofmutation to determine type
-      // check to see what type of mutation
-      // invoke respective handler function
-      if (mutationName !== null) {
-        // let mutationString: string | null = null;
-        // go through mutationTypes object and store all keys as strings in an array
-        const arrayOfMutationTypes: Array<string> = Object.keys(mutationTypes);
-        // store first element in arrayOfMutationTypes that includes the action (CUD operation string)
-        const mutationAction: string = arrayOfMutationTypes.find((action) =>
-          // find value of action key in mutationTypes
-          // see which value is included in the mutationName we took from mutation query
-          mutationTypes[action as keyof MutationTypeSpecifier].some(
-            (type: string) => mutationName?.includes(type)
-          )
-        ) as keyof MutationTypeSpecifier;
+  //   // logic for checking what mutation is occurring and getting mutation type
+  //   if (containsMutation) {
+  //     // parse query to extract name
+  //     let mutationName: string | null = null;
+  //     // traverse through AST using graphql's visit function
+  //     visit(parsedQuery, {
+  //       // this should be invoked whenever the visit function encounters an operation defintion node
+  //       // here, we create operation defintion key with associated method which is operationdefinition(node)
+  //       OperationDefinition(node) {
+  //         // if the node is a mutation and the value of the name property in node is defined
+  //         if (node.operation === 'mutation' && node.name) {
+  //           // set mutationName to the value of the name key in the node
+  //           mutationName = node.name.value;
+  //         }
+  //       },
+  //     });
+  //     // target first keyword in typeofmutation to determine type
+  //     // check to see what type of mutation
+  //     // invoke respective handler function
+  //     if (mutationName !== null) {
+  //       // let mutationString: string | null = null;
+  //       // go through mutationTypes object and store all keys as strings in an array
+  //       const arrayOfMutationTypes: Array<string> = Object.keys(mutationTypes);
+  //       // store first element in arrayOfMutationTypes that includes the action (CUD operation string)
+  //       const mutationAction: string = arrayOfMutationTypes.find((action) =>
+  //         // find value of action key in mutationTypes
+  //         // see which value is included in the mutationName we took from mutation query
+  //         mutationTypes[action as keyof MutationTypeSpecifier].some(
+  //           (type: string) => mutationName?.includes(type)
+  //         )
+  //       ) as keyof MutationTypeSpecifier;
 
-        if (mutationAction) {
-          mutationHandler(mutationAction, queryString);
-        }
-      } else {
-        console.log('mutation action type not found!')
-        return 'mutation action type not found!';
-      }
-    }
-  } catch (err) {
-    if (err instanceof Error) {
-      console.log(`${err}, Something went wrong when checking for mutations!`);
-      return createClientError(err.message);
-    }
-  }
+  //       if (mutationAction) {
+  //         mutationHandler(mutationAction, queryString);
+  //       }
+  //     } else {
+  //       console.log('mutation action type not found!');
+  //       return 'mutation action type not found!';
+  //     }
+  //   }
+  // } catch (err) {
+  //   if (err instanceof Error) {
+  //     console.log(`${err}, Something went wrong when checking for mutations!`);
+  //     return createClientError(err.message);
+  //   }
+  // }
 
   if (data) {
     return true;
   }
-  // if there was no data previously stored in cache, 
+  // if there was no data previously stored in cache,
   // add the query and the response to local storage
   else if (!data && response) {
     localStorage.setItem(queryString, JSON.stringify(response));
     return true;
-  } 
+  }
   // potentially add another else if to check if type is a mutation
   // if so, invoke mutation updater function
   else {
@@ -192,7 +216,6 @@ export const checkAndSaveToCache = (
 // function to handle mutation change update query/response
 export const mutationHandler = (mutationType: string, mutationInfo: string) => {
   if (localStorage.hasOwnProperty(mutationInfo)) {
-
   }
 };
 
