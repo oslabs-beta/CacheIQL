@@ -24,12 +24,7 @@ export const cacheMiddleware =
     const parentType = info.parentType.name
       ? info.parentType.name
       : info.parentType;
-    // Check the cache
-    // if (info.parentType.name) {
-    //   const parentType = info.parentType.name;
-    // } else {
-    //   const parentType = info.parentType;
-    // }
+
     const key = `${info.parentType.name}:${info.fieldName}:${args}`;
 
     try {

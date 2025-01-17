@@ -7,10 +7,11 @@ export type ClientErrorType = {
 export type Query =
   | {
       query: string;
+      cacheIQL: boolean;
     }
   | string;
 
-  // define an interface for the various mutation types
+// define an interface for the various mutation types
 export interface MutationTypeSpecifier {
   delete: string[];
   update: string[];
@@ -23,4 +24,3 @@ export const mutationTypes: MutationTypeSpecifier = {
   update: ['update', 'edit'],
   create: ['create', 'add', 'new', 'make'],
 };
-
