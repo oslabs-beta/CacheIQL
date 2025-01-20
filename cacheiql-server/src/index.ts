@@ -54,7 +54,7 @@ export const cacheMiddleware = (
   //returns the object with all of the resolvers wrapped and ready
   return wrappedResolvers;
 };
-//hashing the function to make the key more secure
+//hashing the function to make the key more secure by making it binary
 const hashKey = (string: string): string => {
   let hash = 0;
 
