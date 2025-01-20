@@ -1,6 +1,6 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const { cacheMiddleware } = require('cacheiql-server');
+const { cacheMiddleware } = require('../../../cacheiql-server/src/index.ts');
 //const { buildSchema } = require('graphql');
 //keep as require call to avoid err
 //const db = require('./models/starWarsModels');
@@ -18,6 +18,7 @@ const testOBJ = {
 
 console.log('Root Values: ', rootValue); // Check if the resolvers are properly defined.
 
+const TTL_IN_SECONDS = 3; 
 app.use(
   '/graphql',
   graphqlHTTP({
@@ -25,7 +26,7 @@ app.use(
     //rootValue:rootValue,
     rootValue: Object.keys(rootValue).reduce((wrappedResolvers, key) => {
       console.log(`Wrapping resolver for ${key}`);
-      const wrappedResolver = cacheMiddleware(rootValue[key]);
+      const wrappedResolver = cacheMiddleware(rootValue[key], {ttl: TTL_IN_SECONDS});
 
       // Logging to make sure we're wrapping the function correctly
       console.log(`Wrapped resolver for ${key}: `, wrappedResolver);

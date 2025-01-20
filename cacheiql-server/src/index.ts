@@ -8,14 +8,15 @@ export const cacheMiddleware =
       args: any,
       info: GraphQLResolveInfo,
       context?: any
-    ) => Promise<any>
+    ) => Promise<any>, 
+    options: {ttl?:number}
   ) =>
   async (
     parent: any,
     args: any,
     info: GraphQLResolveInfo,
     context?: any
-  ): Promise<any> => {
+    ): Promise<any> => {
     if (!info) {
       console.error('Missing GraphQlResolveInfo in cacheMiddleware');
 
@@ -36,7 +37,7 @@ export const cacheMiddleware =
       }
       console.log(`Cache miss for ${key}`);
       const result = await resolve(parent, args, context, info);
-      await setCacheQuery(key, result);
+      await setCacheQuery(key, result, {ttl:options.ttl});
       return result;
     } catch (error) {
       console.error(error);
