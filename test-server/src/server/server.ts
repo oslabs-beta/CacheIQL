@@ -1,6 +1,6 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const { cacheMiddleware } = require('cacheiql-server');
+const { cacheMiddleware } = require('../../../cacheiql-server/src/index.ts');
 //const { buildSchema } = require('graphql');
 //keep as require call to avoid err
 //const db = require('./models/starWarsModels');
@@ -19,12 +19,13 @@ const app = express();
 //cacheMiddleware(rootValue);
 //console.log('Root Values: ', rootValue); // Check if the resolvers are properly defined.
 
+const TTL_IN_SECONDS = 3;
 app.use(
   '/graphql',
   graphqlHTTP({
     schema: graphqlSchema,
     //rootValue:rootValue,
-    rootValue: cacheMiddleware(rootValue, 10),
+    rootValue: cacheMiddleware(rootValue, TTL_IN_SECONDS),
     graphiql: true,
   })
 );
