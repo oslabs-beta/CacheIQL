@@ -2,7 +2,10 @@ import { setCacheQuery, getCachedQuery, invalidateCache } from './cacheManager';
 import { GraphQLResolveInfo } from 'graphql';
 
 //takes the rootValue as input to wrap each resolver in caching logic
-export const cacheMiddleware = (rootValue: { [key: string]: Function }) => {
+export const cacheMiddleware = (
+  rootValue: { [key: string]: Function },
+  ttl: number = 60
+) => {
   //creates an empty object to store the modified resolver functions
   const wrappedResolvers: { [key: string]: Function } = {};
 
@@ -32,7 +35,7 @@ export const cacheMiddleware = (rootValue: { [key: string]: Function }) => {
       const key = hashKey(`${info.parentType.name}:${info.fieldName}:${args}`);
 
       try {
-        const cachedData = await getCachedQuery(key);
+        const cachedData = await getCachedQuery(key, ttl);
         if (cachedData) {
           //console.log(`Cache hit for ${key}`);
 
@@ -40,7 +43,7 @@ export const cacheMiddleware = (rootValue: { [key: string]: Function }) => {
         }
         //console.log(`Cache miss for ${key}`);
         const result = await resolve(parent, args, context, info);
-        await setCacheQuery(key, result);
+        await setCacheQuery(key, result, ttl);
         return result;
       } catch (error) {
         console.error(error);
