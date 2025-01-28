@@ -1,3 +1,4 @@
+// Entry point for client-side caching
 import { cacheiqIt } from './export';
 
 export const cacheIt = (

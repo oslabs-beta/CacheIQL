@@ -37,7 +37,7 @@ const Dashboard = () => {
             homeworld_id
             }
           }`,
-        });
+        }, 10);
         console.log(response);
         setCharacterinfo(response.data.people);
         const endTime = performance.now();
