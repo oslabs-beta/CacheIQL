@@ -10,36 +10,24 @@ const rootValue = require('./schema/resolvers');
 
 const app = express();
 
-const testOBJ = {
-  print: (string: string) => {
-    return string;
-  },
-};
+// const testOBJ = {
+//   print: (string: string) => {
+//     return string;
+//   },
+// };
 
-console.log('Root Values: ', rootValue); // Check if the resolvers are properly defined.
+//cacheMiddleware(rootValue);
+//console.log('Root Values: ', rootValue); // Check if the resolvers are properly defined.
 
-const TTL_IN_SECONDS = 3; 
+const TTL_IN_SECONDS = 3;
 app.use(
   '/graphql',
   graphqlHTTP({
     schema: graphqlSchema,
     //rootValue:rootValue,
-    rootValue: Object.keys(rootValue).reduce((wrappedResolvers, key) => {
-      console.log(`Wrapping resolver for ${key}`);
-      const wrappedResolver = cacheMiddleware(rootValue[key], {ttl: TTL_IN_SECONDS});
-
-      // Logging to make sure we're wrapping the function correctly
-      console.log(`Wrapped resolver for ${key}: `, wrappedResolver);
-
-      return {
-        ...wrappedResolvers,
-        [key]: wrappedResolver,
-      };
-    }, {}),
+    rootValue: cacheMiddleware(rootValue, TTL_IN_SECONDS),
     graphiql: true,
   })
 );
 
 app.listen(3000, () => console.log('listening on 3000'));
-
-console.log('middleware', cacheMiddleware);

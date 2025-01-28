@@ -15,23 +15,29 @@ let cacheMisses = 0;
 export const setCacheQuery = async (
   key: string,
   data: any,
+  ttl: number = 60,
   options: CacheOptions = {}
 ) => {
   try {
     const client = getRedisClient();
-    const ttl = options.ttl || 3600; // Default TTL: 1 hour
+    // const ttl = options.ttl || 10; // Default TTL: 1 hour
     const namespacedKey = `myApp:${key}`;
-    await client.set(namespacedKey, JSON.stringify(data), { EX: ttl });
+    await client.set(namespacedKey, JSON.stringify(data));
+    client.expire(namespacedKey, ttl);
   } catch (error) {
     console.error(`Error caching query for key "${key}":`, error);
     throw new Error(`Cache operation failed for key "${key}"`);
   }
 };
 
-export const getCachedQuery = async (key: string): Promise<any | null> => {
+export const getCachedQuery = async (
+  key: string,
+  ttl: number = 60
+): Promise<any | null> => {
   try {
     const client = getRedisClient();
     const cachedData = await client.get(`myApp:${key}`);
+    client.expire(`myApp:${key}`, ttl);
     if (cachedData) {
       cacheHits++;
       return JSON.parse(cachedData);
