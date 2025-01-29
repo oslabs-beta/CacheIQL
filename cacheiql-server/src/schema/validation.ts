@@ -1,0 +1,1 @@
+// Validates provided schema JSON

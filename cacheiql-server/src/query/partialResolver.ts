@@ -1,0 +1,1 @@
+//Resolves partial queries for uncached data
