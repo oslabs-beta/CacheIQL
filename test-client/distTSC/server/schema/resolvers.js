@@ -26,14 +26,6 @@ module.exports = {
         //response being returned is in the shape of an array
         return results.rows;
     }),
-    reviews: () => __awaiter(void 0, void 0, void 0, function* () {
-        //query
-        const query = 'SELECT * FROM reviews';
-        //request
-        const results = yield db.query(query);
-        //response being returned is in the shape of an array
-        return results.rows;
-    }),
     //This Resolver selects a single person from the people table
     person: (args) => __awaiter(void 0, void 0, void 0, function* () {
         //selects where the id matches

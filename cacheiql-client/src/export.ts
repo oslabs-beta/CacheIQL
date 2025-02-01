@@ -1,4 +1,4 @@
-import { ClientErrorType, Query } from './types';
+import { ClientErrorType, Query, Mutation } from './types';
 import { createClientError } from './errorhandling';
 import { checkAndSaveToCache, cacheManager } from './cacheManagement';
 import gql from 'graphql-tag';
@@ -6,88 +6,161 @@ import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
 import { MutationTypeSpecifier, mutationTypes } from './types';
 
-// import client error type
-// you want to import not export a type because it leads to more errors
-
-
-// cacheiqit function that makes fetch
+// cacheiqIt --- function that makes fetch
 export const cacheiqIt = async (
   endpoint: string,
-  query: Query,
+  query?: Query,
+  mutation?:Mutation,
   time?: number,
   variables?: object
 ): Promise<string | object | null | void | JSON> => {
-  console.log(typeof query);
-  if (typeof query !== 'string' && typeof query !== 'object') {
-    console.error(
-      createClientError(
-        'Query passed in is invalid. Please check to make sure its an object or string'
-      )
-    );
-  }
 
-  // check if query is an object
-  if (typeof query === 'object') {
-    // if an object is passed, check the query property to see if type is string
-    if (typeof query.query !== 'string') {
+  if(query){
+  
+    //console.log(typeof query);
+    if (typeof query !== 'string' && typeof query !== 'object') {
       console.error(
         createClientError(
-          'The value of query must be a string to make a proper GraphQL query.'
+          'Query passed in is invalid. Please check to make sure its an object or string'
         )
       );
     }
-  }
 
-  // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
-  if (query !== null) {
-    try {
-      // if query is not cached, make fetch to DB
-      if (!checkAndSaveToCache(query) && typeof query === 'object') {
-        const response: any = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            // need to change this later to account for variables
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(query),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            // error handling for if data contains an error
-            if (data.errors) {
-              console.error(data.errors[0]);
-              return;
-            }
-            console.log(data);
-            // cache newly fetched data
-            checkAndSaveToCache(query, data);
-            cacheManager(query, time);
-            return data;
-          });
-        return response;
-      } else {
-        // variable to hold query string (either pulled from object or as is)
-        const queryString = typeof query === 'object' ? query.query : query;
-        // instead of storing the error object, this returns early with the error
-        // reassurance operator !
-        if (JSON.parse(localStorage.getItem(queryString)!).errors) {
-          console.error(
-            JSON.parse(localStorage.getItem(queryString)!).errors[0]
-          );
-          return;
-        }
-        // console.log('query & response found in cache!');
-        const response: any = JSON.parse(localStorage.getItem(queryString)!);
-        return response;
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(
-          `${err}, Something wrong with fetching query through GraphQL!`
+    // check if query is an object
+    if (typeof query === 'object') {
+      // if an object is passed, check the query property to see if type is string
+      if (typeof query.query !== 'string') {
+        console.error(
+          createClientError(
+            'The value of query must be a string to make a proper GraphQL query.'
+          )
         );
-        return createClientError(err.message);
       }
     }
+
+    // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
+    if (query !== null) {
+      try {
+        // if query is not cached, make fetch to DB
+        if (!checkAndSaveToCache(query) && typeof query === 'object') {
+          const response: any = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              // need to change this later to account for variables
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(query),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              // error handling for if data contains an error
+              if (data.errors) {
+                console.error(data.errors[0]);
+                return;
+              }
+              console.log(data);
+              // cache newly fetched data
+              checkAndSaveToCache(query, data);
+              cacheManager(query, time);
+              return data;
+            });
+          return response;
+        } else {
+          // variable to hold query string (either pulled from object or as is)
+          const queryString = typeof query === 'object' ? query.query : query;
+          // instead of storing the error object, this returns early with the error
+          // reassurance operator !
+          if (JSON.parse(localStorage.getItem(queryString)!).errors) {
+            console.error(
+              JSON.parse(localStorage.getItem(queryString)!).errors[0]
+            );
+            return;
+          }
+          // console.log('query & response found in cache!');
+          const response: any = JSON.parse(localStorage.getItem(queryString)!);
+          return response;
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log(
+            `${err}, Something wrong with fetching query through GraphQL!`
+          );
+          return createClientError(err.message);
+        }
+      }
+    }
+  }
+
+  if(mutation){
+    if (typeof mutation !== 'string' && typeof mutation !== 'object') {
+      console.error(
+        createClientError(
+          'Mutation passed in is invalid. Please check to make sure its an object or string'
+        )
+      );
+    }
+    if (typeof mutation === 'object') {
+      // if an object is passed, check the query property to see if type is string
+      if (typeof mutation.query !== 'string') {
+        console.error(
+          createClientError(
+            'The value of mutation must be a string to make a proper GraphQL query.'
+          )
+        );
+      }
+    }
+
+    if (mutation !== null) {
+      try {
+        // if query is not cached, make fetch to DB
+        if (!checkAndSaveToCache(mutation) && typeof mutation === 'object') {
+          const response: any = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              // need to change this later to account for variables
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(mutation),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              // error handling for if data contains an error
+              if (data.errors) {
+                console.error(data.errors[0]);
+                return;
+              }
+              console.log(data);
+              // cache newly fetched data
+              checkAndSaveToCache(mutation, data);
+              cacheManager(mutation, time);
+              return data;
+            });
+          return response;
+        } else {
+          // variable to hold query string (either pulled from object or as is)
+          const mutationString = typeof mutation === 'object' ? mutation.query : mutation;
+          // instead of storing the error object, this returns early with the error
+          // reassurance operator !
+          if (JSON.parse(localStorage.getItem(mutationString)!).errors) {
+            console.error(
+              JSON.parse(localStorage.getItem(mutationString)!).errors[0]
+            );
+            return;
+          }
+          // console.log('query & response found in cache!');
+          const response: any = JSON.parse(localStorage.getItem(mutationString)!);
+          return response;
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log(
+            `${err}, Something wrong with fetching query through GraphQL!`
+          );
+          return createClientError(err.message);
+        }
+      }
+    }
+
   }
 };
 

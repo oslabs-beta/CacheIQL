@@ -1,5 +1,5 @@
+"use strict";
 const { buildSchema } = require('graphql');
-
 /**Similar to how typescript makes you define the types to use the data
  * the schema makes you format how your data is coming so you can parse it how you want
  * within the query
@@ -38,13 +38,11 @@ module.exports = buildSchema(`
     input ReviewInput{
     text:String!
     movie_id: Int!
-    fettyWap: String!
     }
         
     type Query {
     people: [person]
     person(id: ID!): person!
-    reviews: [review]
     }
             
     type Mutation{

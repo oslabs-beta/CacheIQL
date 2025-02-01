@@ -4,11 +4,15 @@ export type ClientErrorType = {
   message: { err: string };
 };
 
-export type Query =
-  | {
-      query: string;
-      cacheIQL: boolean;
-    }
+export type Query = {
+    query: string;
+    //cacheIQL: boolean;
+  }
+  | string;
+
+export type Mutation = {
+  query:string;
+  }
   | string;
 
 // define an interface for the various mutation types
