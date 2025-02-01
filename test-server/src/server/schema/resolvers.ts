@@ -46,5 +46,62 @@ module.exports = {
 
     return results.rows[0];
   },
+  createPerson: async (args: {
+    input: {
+      name: string;
+      mass?: string;
+      hair_color?: string;
+      skin_color?: string;
+      eye_color?: string;
+      birth_year?: string;
+      gender?: string;
+      species_id?: number;
+      homeworld_id?: number;
+      height?: number;
+    };
+  }) => {
+    const query = `
+      INSERT INTO people (name, mass, hair_color, skin_color, eye_color, birth_year, gender, species_id, homeworld_id, height)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING _id, name, species_id, homeworld_id`;
+
+    const {
+      name,
+      mass,
+      hair_color,
+      skin_color,
+      eye_color,
+      birth_year,
+      gender,
+      species_id,
+      homeworld_id,
+      height,
+    } = args.input;
+
+    const results = await db.query(query, [
+      name,
+      mass,
+      hair_color,
+      skin_color,
+      eye_color,
+      birth_year,
+      gender,
+      species_id,
+      homeworld_id,
+      height,
+    ]);
+    console.log('args', args);
+    // ✅ Invalidate the cache so new data is fetched
+    // await invalidateCacheForMutation('createPerson', args);
+
+    const newPerson = results.rows[0];
+
+    console.log('✅ Created person:', newPerson);
+
+    // ✅ Invalidate cache using the actual person ID
+    //  await invalidateCacheForMutation('createPerson', newPerson);
+
+    return newPerson;
+  }
   //},
 };

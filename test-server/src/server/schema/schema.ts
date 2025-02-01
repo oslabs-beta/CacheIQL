@@ -39,7 +39,18 @@ module.exports = buildSchema(`
     text:String!
     movie_id: Int!
     }
-        
+    input PersonInput {
+        name: String!
+        mass: String
+        hair_color: String
+        skin_color: String
+        eye_color: String
+        birth_year: String
+        gender: String
+        species_id: Int
+        homeworld_id: Int
+        height: Int
+    }   
     type Query {
     people: [person]
     person(id: ID!): person!
@@ -47,5 +58,7 @@ module.exports = buildSchema(`
             
     type Mutation{
     createReview(input: ReviewInput!): review
+    createPerson(input: PersonInput!): person
+    updatePerson(id: ID!, input: PersonInput!): person
     }
     `);
