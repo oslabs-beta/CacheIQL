@@ -41,6 +41,7 @@ module.exports = buildSchema(`
     }
         
     type Query {
+    reviews: [review]
     people: [person]
     person(id: ID!): person!
     }

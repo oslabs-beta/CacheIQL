@@ -9,14 +9,13 @@ const Dashboard = () => {
   const reviewArray: Array<object> = [];
   const [characterinfo, setCharacterinfo] = useState(peopleArray);
   const [reviewInfo, setReviewInfo] = useState(reviewArray);
-  const [reviewText, setReviewText] = useState('')
+  const [reviewText, setReviewText] = useState('');
   const [time, setTime] = useState(0);
   const getPeopleB = async () => {
     const startTime: number = performance.now();
-    const responseCharacter: ResponseObject = await cacheIt(
-      'http://localhost:3000/graphql',
-      {
-        query: `
+    const responseCharacter: ResponseObject = await cacheIt({
+      endpoint: 'http://localhost:3000/graphql',
+      query: `
             {
             people{
             _id
@@ -29,27 +28,17 @@ const Dashboard = () => {
             homeworld_id
             }
           }`,
-      },
-      10
-    );
+      time: 10,
+    });
     console.log(responseCharacter);
     setCharacterinfo(responseCharacter.data.people);
     const endTime: number = performance.now();
     setTime(endTime - startTime);
   };
 
-  /**
-   * {
-    reviews{
-        movie_id
-        review
-    }
-}
-   */
-const getReviews = async()=>{
-  const responseReview: ResponseObject = await cacheIt(
-    'http://localhost:3000/graphql',
-    {
+  const getReviews = async () => {
+    const responseReview: ResponseObject = await cacheIt({
+      endpoint: 'http://localhost:3000/graphql',
       query: `
           {
           reviews {
@@ -58,29 +47,30 @@ const getReviews = async()=>{
             review
           }
         }`,
-    },
-    10
-  );
-  setReviewInfo(responseReview.data.reviews)
-}  
+      time: 10,
+    });
+    setReviewInfo(responseReview.data.reviews);
+  };
 
-const handleReview = (e:any) => {
-  setReviewText(e.target.value);
-  console.log(reviewText);
-}
+  const handleReview = (e: any) => {
+    setReviewText(e.target.value);
+    console.log(reviewText);
+  };
 
-const createReview = async()=> {  
-  const post = await cacheIt('http://localhost:3000/graphql', {
-  mutation: `{
-    createReview(input: {movie_id: 4, text:"${reviewText}"}) {
-      _id
-      review
+  const createReview = async () => {
+    const post = await cacheIt({
+      endpoint: 'http://localhost:3000/graphql',
+      mutation: `{
+        createReview(input: {movie_id: 4, text:"${reviewText}"}) {
+        _id
+        review
     }
-  }
-  `
-},400)
-// --> variables
-}
+   }
+  `,
+      time: 10,
+    });
+    // --> variables
+  };
 
   // const getPeopleA = async () => {
   //   const startTime = performance.now();
@@ -133,12 +123,17 @@ const createReview = async()=> {
       {/** populate a list of review cards based on a different request to gather all reviews*/}
       <div className='reviewsBox'>
         {reviewInfo.map((review: any) => (
-          <ReviewCard key={review._id} review = {review} />
+          <ReviewCard key={review._id} review={review} />
         ))}
       </div>
-      <input type="text" placeholder='Type review here' onChange={handleReview}/>
-      <button type='submit' onClick={createReview}>Submit Your Review</button>
-      
+      <input
+        type='text'
+        placeholder='Type review here'
+        onChange={handleReview}
+      />
+      <button type='submit' onClick={createReview}>
+        Submit Your Review
+      </button>
     </>
   );
 };

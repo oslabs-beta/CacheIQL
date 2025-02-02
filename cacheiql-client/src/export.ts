@@ -1,55 +1,120 @@
-import { ClientErrorType, Query, Mutation } from './types';
+import { cacheiqItType, queryArray, mutationArray } from './types';
 import { createClientError } from './errorhandling';
 import { checkAndSaveToCache, cacheManager } from './cacheManagement';
 import gql from 'graphql-tag';
 import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
 import { MutationTypeSpecifier, mutationTypes } from './types';
+import { promises } from 'dns';
 
 // cacheiqIt --- function that makes fetch
-export const cacheiqIt = async (
-  endpoint: string,
-  query?: Query,
-  mutation?:Mutation,
-  time?: number,
-  variables?: object
-): Promise<string | object | null | void | JSON> => {
+const introspectMap = async (
+  endpoint: string | URL,
+  response?: any
+): Promise<string | object | null | void> => {
+  let mutationArray: readonly mutationArray[] = [];
+  let queryArray: readonly queryArray[] = [];
+  const mutationIntrospect = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      // need to change this later to account for variables
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: `{
+         __schema {
+          mutationType{
+              name
+              fields{
+                  name
+                  type{
+                      name
+                      kind
+                      ofType {
+                            name
+                            kind
+                  }
+                  }
+              }
+          }
+        }
+    }`,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      mutationArray = data.data.__schema.mutationType.fields;
+    });
+  const queryIntrospect = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      // need to change this later to account for variables
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: `{
+           __schema {
+            queryType{
+                name
+                fields{
+                    name
+                    type{
+                        name
+                        kind
+                        ofType{
+                        name
+                        }
+                    }
+                }
+            }
+          }
+      }`,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      queryArray = data.data.__schema.queryType.fields;
+    });
+  console.log(queryArray, mutationArray);
+  for (let i = 0; i < queryArray.length; i++) {
+    for (let k = 0; k < mutationArray.length; k++) {
+      if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
+        console.log('match found');
+      }
+    }
+  }
+};
 
-  if(query){
-  
-    //console.log(typeof query);
-    if (typeof query !== 'string' && typeof query !== 'object') {
+export const cacheiqIt = async ({
+  endpoint,
+  query,
+  mutation,
+  time,
+}: //variables,
+cacheiqItType): Promise<string | object | null | void | JSON> => {
+  introspectMap(endpoint);
+
+  if (query) {
+    if (typeof query !== 'string') {
       console.error(
         createClientError(
-          'Query passed in is invalid. Please check to make sure its an object or string'
+          'Query passed in is invalid. Please check to make sure its a string'
         )
       );
-    }
-
-    // check if query is an object
-    if (typeof query === 'object') {
-      // if an object is passed, check the query property to see if type is string
-      if (typeof query.query !== 'string') {
-        console.error(
-          createClientError(
-            'The value of query must be a string to make a proper GraphQL query.'
-          )
-        );
-      }
     }
 
     // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
     if (query !== null) {
       try {
         // if query is not cached, make fetch to DB
-        if (!checkAndSaveToCache(query) && typeof query === 'object') {
+        if (!checkAndSaveToCache(query) && typeof query === 'string') {
           const response: any = await fetch(endpoint, {
             method: 'POST',
             headers: {
               // need to change this later to account for variables
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(query),
+            body: JSON.stringify({ query: `query${query}` }),
           })
             .then((res) => res.json())
             .then((data) => {
@@ -67,7 +132,7 @@ export const cacheiqIt = async (
           return response;
         } else {
           // variable to hold query string (either pulled from object or as is)
-          const queryString = typeof query === 'object' ? query.query : query;
+          const queryString = query;
           // instead of storing the error object, this returns early with the error
           // reassurance operator !
           if (JSON.parse(localStorage.getItem(queryString)!).errors) {
@@ -91,36 +156,26 @@ export const cacheiqIt = async (
     }
   }
 
-  if(mutation){
-    if (typeof mutation !== 'string' && typeof mutation !== 'object') {
+  if (mutation) {
+    if (typeof mutation !== 'string') {
       console.error(
         createClientError(
-          'Mutation passed in is invalid. Please check to make sure its an object or string'
+          'Mutation passed in is invalid. Please check to make sure its a string'
         )
       );
-    }
-    if (typeof mutation === 'object') {
-      // if an object is passed, check the query property to see if type is string
-      if (typeof mutation.query !== 'string') {
-        console.error(
-          createClientError(
-            'The value of mutation must be a string to make a proper GraphQL query.'
-          )
-        );
-      }
     }
 
     if (mutation !== null) {
       try {
         // if query is not cached, make fetch to DB
-        if (!checkAndSaveToCache(mutation) && typeof mutation === 'object') {
+        if (!checkAndSaveToCache(mutation) && typeof mutation === 'string') {
           const response: any = await fetch(endpoint, {
             method: 'POST',
             headers: {
               // need to change this later to account for variables
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(mutation),
+            body: JSON.stringify({ query: `mutation${mutation}` }),
           })
             .then((res) => res.json())
             .then((data) => {
@@ -129,7 +184,6 @@ export const cacheiqIt = async (
                 console.error(data.errors[0]);
                 return;
               }
-              console.log(data);
               // cache newly fetched data
               checkAndSaveToCache(mutation, data);
               cacheManager(mutation, time);
@@ -138,7 +192,7 @@ export const cacheiqIt = async (
           return response;
         } else {
           // variable to hold query string (either pulled from object or as is)
-          const mutationString = typeof mutation === 'object' ? mutation.query : mutation;
+          const mutationString = mutation;
           // instead of storing the error object, this returns early with the error
           // reassurance operator !
           if (JSON.parse(localStorage.getItem(mutationString)!).errors) {
@@ -148,7 +202,9 @@ export const cacheiqIt = async (
             return;
           }
           // console.log('query & response found in cache!');
-          const response: any = JSON.parse(localStorage.getItem(mutationString)!);
+          const response: any = JSON.parse(
+            localStorage.getItem(mutationString)!
+          );
           return response;
         }
       } catch (err) {
@@ -160,17 +216,15 @@ export const cacheiqIt = async (
         }
       }
     }
-
   }
 };
-
 
 // function to handle mutation change update query/response
 // potentially add parameters of query etc
 // export const mutationHandler = (mutationType: string, mutationInfo: string) => {
-  // if (localStorage.hasOwnProperty(mutationInfo)) {
-  // }
-    // add checker to see if query type is a mutation
+// if (localStorage.hasOwnProperty(mutationInfo)) {
+// }
+// add checker to see if query type is a mutation
 //     try {
 //       // parse query using graphql-tag feature (makes an AST)
 //       const parsedQuery: DocumentNode = gql`
@@ -183,7 +237,7 @@ export const cacheiqIt = async (
 //           definition.kind === 'OperationDefinition' &&
 //           definition.operation === 'mutation'
 //       );
-  
+
 //       // logic for checking what mutation is occurring and getting mutation type
 //       if (containsMutation) {
 //         // parse query to extract name
@@ -215,7 +269,7 @@ export const cacheiqIt = async (
 //               (type: string) => mutationName?.includes(type)
 //             )
 //           ) as keyof MutationTypeSpecifier;
-  
+
 //           if (mutationAction) {
 //             mutationHandler(mutationAction, queryString);
 //           }

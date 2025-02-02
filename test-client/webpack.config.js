@@ -9,7 +9,7 @@ module.exports = {
     filename: 'main.js',
   },
   devServer: {
-    port: '8080',
+    port: '8081',
     static: {
       directory: path.join(__dirname, './dist'),
     },
