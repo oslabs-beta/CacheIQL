@@ -56,7 +56,9 @@ module.exports = {
     args) => __awaiter(void 0, void 0, void 0, function* () {
         const query = 'INSERT into reviews (movie_id,review) VALUES ($1,$2)';
         const { movie_id, text } = args.input;
+        //console.log(movie_id, text);
         const results = yield db.query(query, [movie_id, text]);
+        console.log(results);
         return results.rows[0];
     }),
     //},

@@ -36,10 +36,11 @@ export const mutationTypes: MutationTypeSpecifier = {
   create: ['create', 'add', 'new', 'make'],
 };
 
+// 
 export type cacheiqItType = {
   endpoint: string | URL;
   query?: Query;
   mutation?: Mutation;
   time?: number;
-  varibles?: Object;
+  variables?: Object;
 };

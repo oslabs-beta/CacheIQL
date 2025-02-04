@@ -1,12 +1,12 @@
 // Entry point for client-side caching
 import { cacheiqIt } from './export';
+import { cacheiqItType, queryArray, mutationArray } from './types';
 
-export const cacheIt = (
-  endpoint: string,
-  query?: any,
-  mutation?: any,
-  time?: number,
-  variables?: object
-): any => {
-  return cacheiqIt(endpoint, query, mutation, time, variables);
+export const cacheIt = ({
+  endpoint,
+  query, 
+  mutation,
+  time
+}:cacheiqItType): any => {
+  return cacheiqIt({endpoint, query, mutation, time});
 };

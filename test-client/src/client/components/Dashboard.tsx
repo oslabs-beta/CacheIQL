@@ -30,7 +30,7 @@ const Dashboard = () => {
           }`,
       time: 10,
     });
-    console.log(responseCharacter);
+    //console.log(responseCharacter);
     setCharacterinfo(responseCharacter.data.people);
     const endTime: number = performance.now();
     setTime(endTime - startTime);
@@ -54,7 +54,7 @@ const Dashboard = () => {
 
   const handleReview = (e: any) => {
     setReviewText(e.target.value);
-    console.log(reviewText);
+    //console.log(reviewText);
   };
 
   const createReview = async () => {

@@ -4,98 +4,97 @@ import { checkAndSaveToCache, cacheManager } from './cacheManagement';
 import gql from 'graphql-tag';
 import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
+import {mutationValidator} from './mutationHandler';
 import { MutationTypeSpecifier, mutationTypes } from './types';
 import { promises } from 'dns';
 
 // cacheiqIt --- function that makes fetch
-const introspectMap = async (
-  endpoint: string | URL,
-  response?: any
-): Promise<string | object | null | void> => {
-  let mutationArray: readonly mutationArray[] = [];
-  let queryArray: readonly queryArray[] = [];
-  const mutationIntrospect = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      // need to change this later to account for variables
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: `{
-         __schema {
-          mutationType{
-              name
-              fields{
-                  name
-                  type{
-                      name
-                      kind
-                      ofType {
-                            name
-                            kind
-                  }
-                  }
-              }
-          }
-        }
-    }`,
-    }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      mutationArray = data.data.__schema.mutationType.fields;
-    });
-  const queryIntrospect = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      // need to change this later to account for variables
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: `{
-           __schema {
-            queryType{
-                name
-                fields{
-                    name
-                    type{
-                        name
-                        kind
-                        ofType{
-                        name
-                        }
-                    }
-                }
-            }
-          }
-      }`,
-    }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      queryArray = data.data.__schema.queryType.fields;
-    });
-  console.log(queryArray, mutationArray);
-  for (let i = 0; i < queryArray.length; i++) {
-    for (let k = 0; k < mutationArray.length; k++) {
-      if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
-        console.log('match found');
-      }
-    }
-  }
-};
+// const matchMQ = async (
+//   endpoint: string | URL,
+//   response?: any
+// ): Promise<string | object | null | void> => {
+//   let mutationArray: readonly mutationArray[] = [];
+//   let queryArray: readonly queryArray[] = [];
+//   const mutationIntrospect = await fetch(endpoint, {
+//     method: 'POST',
+//     headers: {
+//       // need to change this later to account for variables
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       query: `{
+//          __schema {
+//           mutationType{
+//               name
+//               fields{
+//                   name
+//                   type{
+//                       name
+//                       kind
+//                       ofType {
+//                             name
+//                             kind
+//                   }
+//                   }
+//               }
+//           }
+//         }
+//     }`,
+//     }),
+//   })
+//     .then((res) => res.json())
+//     .then((data) => {
+//       mutationArray = data.data.__schema.mutationType.fields;
+//     });
+//   const queryIntrospect = await fetch(endpoint, {
+//     method: 'POST',
+//     headers: {
+//       // need to change this later to account for variables
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       query: `{
+//            __schema {
+//             queryType{
+//                 name
+//                 fields{
+//                     name
+//                     type{
+//                         name
+//                         kind
+//                         ofType{
+//                         name
+//                         }
+//                     }
+//                 }
+//             }
+//           }
+//       }`,
+//     }),
+//   })
+//     .then((res) => res.json())
+//     .then((data) => {
+//       queryArray = data.data.__schema.queryType.fields;
+//     });
+//   console.log(queryArray, mutationArray);
+//   for (let i = 0; i < queryArray.length; i++) {
+//     for (let k = 0; k < mutationArray.length; k++) {
+//       if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
+//         console.log('match found');
+//       }
+//     }
+//   }
+// };
 
 export const cacheiqIt = async ({
   endpoint,
   query,
   mutation,
-  time,
-}: //variables,
-cacheiqItType): Promise<string | object | null | void | JSON> => {
-  introspectMap(endpoint);
-
+  time}: cacheiqItType): Promise<string | object | null | void | JSON> => {
+  //introspectMap(endpoint);
   if (query) {
     if (typeof query !== 'string') {
+      //console.log(typeof query)
       console.error(
         createClientError(
           'Query passed in is invalid. Please check to make sure its a string'
@@ -105,6 +104,7 @@ cacheiqItType): Promise<string | object | null | void | JSON> => {
 
     // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
     if (query !== null) {
+  
       try {
         // if query is not cached, make fetch to DB
         if (!checkAndSaveToCache(query) && typeof query === 'string') {
@@ -123,7 +123,7 @@ cacheiqItType): Promise<string | object | null | void | JSON> => {
                 console.error(data.errors[0]);
                 return;
               }
-              console.log(data);
+              //console.log(data);
               // cache newly fetched data
               checkAndSaveToCache(query, data);
               cacheManager(query, time);
@@ -177,18 +177,19 @@ cacheiqItType): Promise<string | object | null | void | JSON> => {
             },
             body: JSON.stringify({ query: `mutation${mutation}` }),
           })
-            .then((res) => res.json())
-            .then((data) => {
-              // error handling for if data contains an error
-              if (data.errors) {
-                console.error(data.errors[0]);
-                return;
-              }
-              // cache newly fetched data
-              checkAndSaveToCache(mutation, data);
-              cacheManager(mutation, time);
-              return data;
-            });
+          .then((res) => res.json())
+          .then((data) => {
+            // error handling for if data contains an error
+            if (data.errors) {
+              console.error(data.errors[0]);
+              return;
+            }
+            // cache newly fetched data
+            checkAndSaveToCache(`mutation${mutation}`, data);
+            mutationValidator(`mutation${mutation}`);
+            cacheManager(mutation, time);
+            return data;
+          });
           return response;
         } else {
           // variable to hold query string (either pulled from object or as is)
