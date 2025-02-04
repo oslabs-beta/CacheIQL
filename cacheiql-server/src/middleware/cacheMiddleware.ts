@@ -1,12 +1,11 @@
 import {
   setCacheQuery,
   getCachedQuery,
-  trackCacheKey,
+  trackCacheDependency,
   invalidateCacheForMutation,
 } from "../cache/cacheManager";
-import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLResolveInfo } from "graphql";
 import { hashKey } from "../cache/cacheUtils";
-
 
 //takes the rootValue as input to wrap each resolver in caching logic
 export const cacheMiddleware = (
@@ -28,30 +27,25 @@ export const cacheMiddleware = (
       parent: any,
       args: any,
       info?: GraphQLResolveInfo,
-      context?: any,
+      context?: any
     ): Promise<any> => {
       if (!info) {
-          console.error(
-            "Missing GraphQlResolveInfo in cacheMiddleware. Bypassing cache."
-          );
-        // console.error(
-        //   `Missing GraphQlResolveInfo in cacheMiddleware for resolver ${key}.`,
-        //   { args, conext }
-        // );
-        
-         return await resolve(parent, args, info, context);
-          // return resolve(parent, args, context, {} as GraphQLResolveInfo);
-        // return await resolve(parent, args, context, info as GraphQLResolveInfo);
+        console.error(
+          "Missing GraphQlResolveInfo in cacheMiddleware. Bypassing cache."
+        );
+
+        return await resolve(parent, args, info, context);
       }
-      // const parentType = info.parentType.name
-      //   ? info.parentType.name
-      //   : info.parentType;
+      // ✅ Fix: Remove brackets [] and capitalize first letter
+      const entityType = info.returnType.toString().replace(/[[\]]/g, ""); // Extracts "Person" instead of "[Person]"
+      const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1);
 
+      // const entity = info.returnType.toString(); // Ensure this gets the entity name
 
-      const entity = info.parentType.name; // Entity name (e.g., "User")
+      // const entity = info.parentType.name; // Entity name (e.g., "User")
       const sortedArgs = JSON.stringify(args, Object.keys(args).sort()); // Ensures consistent key order
       const rawKey = `${entity}:${info.fieldName}:${sortedArgs}`;
-      const cacheKey = hashKey(rawKey)
+      const cacheKey = hashKey(rawKey);
 
       // const cacheKey = hashKey(
       //   `${entity}:${info.fieldName}:${JSON.stringify(args)}`
@@ -66,8 +60,8 @@ export const cacheMiddleware = (
         console.log(`Cache miss for ${cacheKey}`);
         const result = await resolve(parent, args, context, info);
         await setCacheQuery(cacheKey, result, entity, { ttl });
-        console.log(entity)
-        await trackCacheKey(entity, cacheKey); // Track for invalidation
+        console.log(entity);
+        await trackCacheDependency(cacheKey, entity); // Track key dependency
         return result;
       } catch (error) {
         console.error(`Error processing query ${info.fieldName}:`, error);
@@ -82,7 +76,6 @@ export const cacheMiddleware = (
   return wrappedResolvers;
 };
 
-
 export const cacheMutationMiddleware = (rootValue: {
   [key: string]: Function;
 }) => {
@@ -95,14 +88,14 @@ export const cacheMutationMiddleware = (rootValue: {
       parent: any,
       args: any,
       info?: GraphQLResolveInfo,
-      context?: any,
+      context?: any
     ): Promise<any> => {
       if (!info) {
         console.error("Missing GraphQLResolveInfo in cacheMiddleware");
         // return await resolve(parent, args, context, info);
         return await resolve(parent, args, info, context);
       }
-      
+
       const entity = info.parentType.name; // GET ENTITY TYPE
 
       try {
@@ -111,17 +104,11 @@ export const cacheMutationMiddleware = (rootValue: {
         );
         // EXECUTE MUTATION
         const result = await resolve(parent, args, context, info);
+        console.log(
+          `🚨 Calling invalidateCacheForMutation for entity: ${entity}`
+        );
+        await invalidateCacheForMutation(entity);
 
-        const affectedKeys: string[] = await invalidateCacheForMutation(entity);
-
-        if (affectedKeys.length > 0) {
-          console.log(
-            `Cache invalidated for entity "${entity}":`,
-            affectedKeys
-          );
-        } else {
-          console.log(`No matching cache keys found for entity "${entity}".`);
-        }
         return result;
       } catch (error) {
         console.error(

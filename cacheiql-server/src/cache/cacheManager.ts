@@ -34,7 +34,9 @@ export const setCacheQuery = async (
       await client.set(namespacedKey, JSON.stringify(data));
       await client.expire(namespacedKey, options.ttl ?? 60);
       //Every time we cache a query result, we should track its key under the relevant entity.
-      await trackCacheKey(entity, namespacedKey);
+      // await trackCacheKey(entity, namespacedKey);
+      // Track dependencies per field
+      await trackCacheDependency(namespacedKey, entity);
     } else {
        console.warn(`Skipping cache set for ${key} due to undefined data`);
     }   
@@ -129,28 +131,44 @@ export const getData = async (
  * @param entity - The GraphQL entity.
  * @param cacheKey - The cache key to track.
  */
-const MAX_CACHE_KEYS_PER_ENTITY = 500; // Prevents Redis overflow
-export const trackCacheKey = async (entity: string, cacheKey: string) => {
+// const MAX_CACHE_KEYS_PER_ENTITY = 500; // Prevents Redis overflow
+// export const trackCacheKey = async (entity: string, cacheKey: string) => {
+//   try {
+//     const client = await getRedisClient();
+//     const trackingKey = `trackedKeys:${entity}`;
+//     await client.sAdd(trackingKey, cacheKey); // Add the cache key to the set
+//     console.log(
+//       `✅ Tracked cache key: ${cacheKey} under entity: ${trackingKey}`
+//     );
+//     // Trim the set if it exceeds the max limit
+//     const cacheSize = await client.sCard(trackingKey);
+//     if (cacheSize > MAX_CACHE_KEYS_PER_ENTITY) {
+//       const oldKeys = await client.sPop(
+//         trackingKey,
+//         cacheSize - MAX_CACHE_KEYS_PER_ENTITY
+//       );
+//       if (oldKeys) {
+//         await Promise.all(oldKeys.map((key) => client.del(key)));
+//       }
+//     }
+//   } catch (error) {
+//     console.error(`Error tracking cache key for entity "${entity}":`, error);
+//   }
+// };
+
+/**
+ * Tracks cache dependencies per entity.
+ * This ensures that when an entity changes, only affected fields are invalidated.
+ * @param cacheKey - The cache key to track.
+ * @param entity - The entity name.
+ */
+export const trackCacheDependency = async (cacheKey: string, entity: string) => {
   try {
     const client = await getRedisClient();
-    const trackingKey = `trackedKeys:${entity}`;
-    await client.sAdd(trackingKey, cacheKey); // Add the cache key to the set
-    console.log(
-      `✅ Tracked cache key: ${cacheKey} under entity: ${trackingKey}`
-    );
-    // Trim the set if it exceeds the max limit
-    const cacheSize = await client.sCard(trackingKey);
-    if (cacheSize > MAX_CACHE_KEYS_PER_ENTITY) {
-      const oldKeys = await client.sPop(
-        trackingKey,
-        cacheSize - MAX_CACHE_KEYS_PER_ENTITY
-      );
-      if (oldKeys) {
-        await Promise.all(oldKeys.map((key) => client.del(key)));
-      }
-    }
+    const trackingKey = `dependencyKeys:${entity}`;
+    await client.sAdd(trackingKey, cacheKey);
   } catch (error) {
-    console.error(`Error tracking cache key for entity "${entity}":`, error);
+    console.error(`Error tracking cache dependency for entity "${entity}":`, error);
   }
 };
 
@@ -162,30 +180,24 @@ export const trackCacheKey = async (entity: string, cacheKey: string) => {
 export const invalidateCacheForMutation = async (entity: string) => {
   try {
     const client = await getRedisClient();
-    const trackingKey = `trackedKeys:${entity}`;
+    const trackingKey = `dependencyKeys:${entity}`;
 
     const cacheKeys: string[] = await client.sMembers(trackingKey);
+    console.log(
+      `Found ${cacheKeys.length} cache keys to delete for entity: ${entity}`
+    );
 
-    if (cacheKeys.length > 50) {
-      // Auto-clean old entries if too many
-      console.warn(`Too many cache keys for entity "${entity}". Cleaning up.`);
-      const oldKeys = cacheKeys.slice(0, cacheKeys.length - 50);
-      for (const key of oldKeys) {
-        await client.expire(key, 5); // Allow short-lived access before expiry
-      }
-    }
 
     if (cacheKeys.length > 0) {
       await Promise.all(cacheKeys.map((key) => client.del(key)));
       await client.del(trackingKey);
       console.log(`Invalidated cache for entity: ${entity}`);
-      return cacheKeys;
+    } else {
+      console.log(`No cache keys found for entity: ${entity}`);
     }
-
-    return [];
   } catch (error) {
     console.error(`Error invalidating cache for entity "${entity}":`, error);
-    return [];
+    
   }
 };
 
