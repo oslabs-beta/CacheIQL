@@ -42,7 +42,7 @@ const Dashboard = () => {
             homeworld_id
             }
           }`,
-            time: 10,
+            time: 3600,
         });
         //console.log(responseCharacter);
         setCharacterinfo(responseCharacter.data.people);
@@ -60,7 +60,7 @@ const Dashboard = () => {
             review
           }
         }`,
-            time: 10,
+            time: 3600,
         });
         setReviewInfo(responseReview.data.reviews);
     });
@@ -73,12 +73,11 @@ const Dashboard = () => {
             endpoint: 'http://localhost:3000/graphql',
             mutation: `{
         createReview(input: {movie_id: 4, text:"${reviewText}"}) {
-        _id
         review
     }
    }
   `,
-            time: 10,
+            time: 3600,
         });
         // --> variables
     });

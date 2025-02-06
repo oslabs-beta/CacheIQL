@@ -10,7 +10,7 @@ import { createClientError } from './errorhandling';
 // const matchMQ = async (
 //   endpoint: string | URL,
 //   mutation
-// ): Promise<string | object | null | void> => {
+// ): Promise<string | objaect | null | void> => {
 //   let mutationArray: readonly mutationArray[] = [];
 //   let queryArray: readonly queryArray[] = [];
 //   const mutationIntrospect = await fetch(endpoint, {
@@ -87,8 +87,8 @@ import { createClientError } from './errorhandling';
 
 
 export const mutationValidator = (query: string, mutationType?: string) => {
-
   if (localStorage.hasOwnProperty(query)) {
+
     // console.log(query);
     // add checker to see if query type is a mutation
     try {
@@ -103,8 +103,8 @@ export const mutationValidator = (query: string, mutationType?: string) => {
           definition.kind === 'OperationDefinition' &&
           definition.operation === 'mutation'
       );
-      console.log('ParsedQuery: ',parsedQuery)
-      console.log("containsMutation: ",containsMutation);
+      //console.log('ParsedQuery: ', parsedQuery)
+      //console.log('containsMutation: ', containsMutation);
       // parse query to extract name
       let mutationNodeValue: string | null = null;
       // logic for checking what mutation is occurring and getting mutation type
@@ -115,7 +115,7 @@ export const mutationValidator = (query: string, mutationType?: string) => {
           // here, we create operation defintion key with associated method which is operationdefinition(node)
           OperationDefinition(node) {
             // if the node is a mutation and the value of the name property in node is defined
-            console.log('Node',node)
+            //console.log('Node', node)
             // if there is a mutation
             if (node.operation === 'mutation') {
               // enter the selectionSet
@@ -124,8 +124,8 @@ export const mutationValidator = (query: string, mutationType?: string) => {
               // if firstSelection exists and the kind value of that property is field (which it has to be in order to have a name property)
               if (firstSelection && firstSelection.kind === 'Field') {
                 // set mutationNodeValue to the name keys associated value
-                mutationNodeValue = firstSelection.name.value
-                console.log('mutation name:', mutationNodeValue);
+                mutationNodeValue = firstSelection.name.value;
+                //console.log('mutation name:', mutationNodeValue);
               }
             } else {
               console.error('Node operation is not a mutation!')
@@ -164,6 +164,10 @@ export const mutationValidator = (query: string, mutationType?: string) => {
     }
   }
 };
+
+
+
+
 
 // mutationHandler function --- updates cached data
 export const mutationHandler = (CrudMutationAction: string, query: string) => {
@@ -212,11 +216,11 @@ export const mutationHandler = (CrudMutationAction: string, query: string) => {
   
   // do this to match mutation with the type of query
 
-  // find all queries that return that type (we'll then know which ones to update)
+  // find all queries that return that type (we'll then know which ones to delete)
 
-  // cache invalidation --- delete old/stale(?) query?
+  // cache invalidation --- delete old/stale(?) queries
 
-  // then, re-fetch new data from DB using the query 
+  // then, re-fetch new data from DB using the query(?)
 
   // update the cache with newly fetched data
 

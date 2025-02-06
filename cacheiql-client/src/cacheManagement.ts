@@ -1,6 +1,8 @@
 import { Query, Mutation } from './types';
 import { generateKey } from './generatekey';
 import { mutationValidator } from './mutationHandler';
+import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
 // cacheManager --- function for time-based cache management (removes cached data from local storage)
 export const cacheManager = (key: Query | Mutation, time: number = 60) => {
@@ -9,7 +11,7 @@ export const cacheManager = (key: Query | Mutation, time: number = 60) => {
     const query = key;
     for (let i = 0; i < localStorage.length; i++) {
       if (localStorage.key(i) === query) {
-        // console.log('1 second has passed');
+        console.log('1 second has passed');
         localStorage.removeItem(query);
         return;
       }
@@ -28,17 +30,12 @@ export const checkAndSaveToCache = (
     return 'query is null';
   }
   const queryString = query;
-
+  console.log(queryString);
   // function to create key for caching (key will be query string, value is response)
   const key = generateKey(queryString, variables);
 
   // consider checking mutation vs query before checking storage etc
   const data = localStorage.getItem(queryString);
-
-  // call mutationHandler here to check for mutation(s) on query
-  // update query keys value in localstorage instead of storing result as a new key value pair
-
-  // {query, changeData} : 'pears, bananas'
 
   if (data) {
     return true;
