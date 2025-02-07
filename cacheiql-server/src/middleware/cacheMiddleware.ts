@@ -36,20 +36,23 @@ export const cacheMiddleware = (
 
         return await resolve(parent, args, info, context);
       }
-      // ✅ Fix: Remove brackets [] and capitalize first letter
+      console.log(
+        `cacheMiddleware triggered for operation: ${info.operation?.operation}`
+      );
+
+
+      // Ensure only queries are cached
+      if (info.operation?.operation !== "query") {
+        console.log(`Skipping cache for mutation: ${info.fieldName}`);
+        return await resolve(parent, args, info, context);
+      }
+
+      // Fix: Remove brackets [] and capitalize first letter
       const entityType = info.returnType.toString().replace(/[[\]]/g, ""); // Extracts "Person" instead of "[Person]"
       const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1);
-
-      // const entity = info.returnType.toString(); // Ensure this gets the entity name
-
-      // const entity = info.parentType.name; // Entity name (e.g., "User")
       const sortedArgs = JSON.stringify(args, Object.keys(args).sort()); // Ensures consistent key order
       const rawKey = `${entity}:${info.fieldName}:${sortedArgs}`;
       const cacheKey = hashKey(rawKey);
-
-      // const cacheKey = hashKey(
-      //   `${entity}:${info.fieldName}:${JSON.stringify(args)}`
-      // );
 
       try {
         const cachedData = await getCachedQuery(cacheKey);
@@ -79,6 +82,7 @@ export const cacheMiddleware = (
 export const cacheMutationMiddleware = (rootValue: {
   [key: string]: Function;
 }) => {
+
   const wrappedResolvers: { [key: string]: Function } = {};
 
   Object.keys(rootValue).forEach((key) => {
@@ -95,8 +99,18 @@ export const cacheMutationMiddleware = (rootValue: {
         // return await resolve(parent, args, context, info);
         return await resolve(parent, args, info, context);
       }
+      console.log(
+        `cacheMutationMiddleware triggered for operation: ${info.operation?.operation}`
+      );
+      // Ensure only mutations are processed
+      if (info.operation?.operation !== "mutation") {
+        console.log(`Skipping cache invalidation for query: ${info.fieldName}`);
+        return await resolve(parent, args, info, context);
+      }
 
-      const entity = info.parentType.name; // GET ENTITY TYPE
+      // const entity = info.parentType?.name || "UnknownEntity"; // GET ENTITY TYPE
+      const entityType = info.returnType.toString().replace(/[[\]]/g, "");
+      const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1);
 
       try {
         console.log(

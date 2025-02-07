@@ -10,6 +10,7 @@ import { GraphQLResolveInfo, getNamedType, isObjectType } from "graphql";
  * @returns An array of entity names being queried.
  */
 export function extractEntities(info: GraphQLResolveInfo): string[] {
+  console.log("extractEntities function invoked in QueryParser");
   const entities: Set<string> = new Set();
 
   // Get the parent type (Query, Mutation)
@@ -28,6 +29,6 @@ export function extractEntities(info: GraphQLResolveInfo): string[] {
       }
     }
   });
-
+  console.log("Extracted Entities:", Array.from(entities)); // Debugging log
   return Array.from(entities);
 }

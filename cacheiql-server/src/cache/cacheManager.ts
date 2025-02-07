@@ -189,7 +189,7 @@ export const invalidateCacheForMutation = async (entity: string) => {
 
 
     if (cacheKeys.length > 0) {
-      await Promise.all(cacheKeys.map((key) => client.del(key)));
+      await Promise.all(cacheKeys.map((key) => client.del(`myApp:${key}`)));
       await client.del(trackingKey);
       console.log(`Invalidated cache for entity: ${entity}`);
     } else {
