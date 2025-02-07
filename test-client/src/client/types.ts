@@ -19,8 +19,17 @@ export type HitMissProps = {
   time: number;
 };
 
+export type ReviewCardProps = {
+  review:{
+    _id: string;
+    movie_id: number;
+    review: string;
+  }
+
+}
+
 
 export type ResponseObject = {
-  data: { people: object[] };
+  data: { people: object[], reviews: object[]}
 };
 

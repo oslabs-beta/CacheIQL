@@ -38,11 +38,13 @@ module.exports = buildSchema(`
     input ReviewInput{
     text:String!
     movie_id: Int!
+    fettyWap: String!
     }
         
     type Query {
     people: [person]
     person(id: ID!): person!
+    reviews: [review]
     }
             
     type Mutation{

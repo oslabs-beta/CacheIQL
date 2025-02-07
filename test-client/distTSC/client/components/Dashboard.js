@@ -27,8 +27,7 @@ const Dashboard = () => {
     const [time, setTime] = (0, react_1.useState)(0);
     const getPeopleB = () => __awaiter(void 0, void 0, void 0, function* () {
         const startTime = performance.now();
-        const responseCharacter = yield cacheIt({
-            endpoint: 'http://localhost:3000/graphql',
+        const responseCharacter = yield cacheIt('http://localhost:3000/graphql', {
             query: `
             {
             people{
@@ -42,16 +41,22 @@ const Dashboard = () => {
             homeworld_id
             }
           }`,
-            time: 3600,
-        });
-        //console.log(responseCharacter);
+        }, 10);
+        console.log(responseCharacter);
         setCharacterinfo(responseCharacter.data.people);
         const endTime = performance.now();
         setTime(endTime - startTime);
     });
+    /**
+     * {
+      reviews{
+          movie_id
+          review
+      }
+  }
+     */
     const getReviews = () => __awaiter(void 0, void 0, void 0, function* () {
-        const responseReview = yield cacheIt({
-            endpoint: 'http://localhost:3000/graphql',
+        const responseReview = yield cacheIt('http://localhost:3000/graphql', {
             query: `
           {
           reviews {
@@ -60,25 +65,23 @@ const Dashboard = () => {
             review
           }
         }`,
-            time: 3600,
-        });
+        }, 10);
         setReviewInfo(responseReview.data.reviews);
     });
     const handleReview = (e) => {
         setReviewText(e.target.value);
-        //console.log(reviewText);
+        console.log(reviewText);
     };
     const createReview = () => __awaiter(void 0, void 0, void 0, function* () {
-        const post = yield cacheIt({
-            endpoint: 'http://localhost:3000/graphql',
+        const post = yield cacheIt('http://localhost:3000/graphql', {
             mutation: `{
-        createReview(input: {movie_id: 4, text:"${reviewText}"}) {
-        review
+    createReview(input: {movie_id: 4, text:"${reviewText}"}) {
+      _id
+      review
     }
-   }
-  `,
-            time: 3600,
-        });
+  }
+  `
+        }, 400);
         // --> variables
     });
     // const getPeopleA = async () => {
@@ -114,6 +117,6 @@ const Dashboard = () => {
     //       setTime(endTime - startTime);
     //     });
     // };
-    return ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("button", { onClick: getPeopleB, className: 'getPeople' }), (0, jsx_runtime_1.jsx)("button", { onClick: getReviews, className: 'getPeople' }), (0, jsx_runtime_1.jsx)("div", { className: 'hitmissbox', children: (0, jsx_runtime_1.jsx)(HitMiss_1.default, { time: time }) }), (0, jsx_runtime_1.jsx)("div", { className: 'cardBox', children: characterinfo.map((character) => ((0, jsx_runtime_1.jsx)(CharacterCard_1.default, { character: character }, character._id))) }), (0, jsx_runtime_1.jsx)("div", { className: 'reviewsBox', children: reviewInfo.map((review) => ((0, jsx_runtime_1.jsx)(ReviewCard_1.default, { review: review }, review._id))) }), (0, jsx_runtime_1.jsx)("input", { type: 'text', placeholder: 'Type review here', onChange: handleReview }), (0, jsx_runtime_1.jsx)("button", { type: 'submit', onClick: createReview, children: "Submit Your Review" })] }));
+    return ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)("button", { onClick: getPeopleB, className: 'getPeople' }), (0, jsx_runtime_1.jsx)("button", { onClick: getReviews, className: 'getPeople' }), (0, jsx_runtime_1.jsx)("div", { className: 'hitmissbox', children: (0, jsx_runtime_1.jsx)(HitMiss_1.default, { time: time }) }), (0, jsx_runtime_1.jsx)("div", { className: 'cardBox', children: characterinfo.map((character) => ((0, jsx_runtime_1.jsx)(CharacterCard_1.default, { character: character }, character._id))) }), (0, jsx_runtime_1.jsx)("div", { className: 'reviewsBox', children: reviewInfo.map((review) => ((0, jsx_runtime_1.jsx)(ReviewCard_1.default, { review: review }, review._id))) }), (0, jsx_runtime_1.jsx)("input", { type: "text", placeholder: 'Type review here', onChange: handleReview }), (0, jsx_runtime_1.jsx)("button", { type: 'submit', onClick: createReview, children: "Submit Your Review" })] }));
 };
 exports.default = Dashboard;
