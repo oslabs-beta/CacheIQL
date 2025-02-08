@@ -11,10 +11,10 @@ export const matchMQ = async (
   let mutationArray: readonly mutationArray[] = [];
   let queryArray: readonly queryArray[] = [];
   const mutationIntrospect = await fetch(endpoint, {
-    method: "POST",
+    method: 'POST',
     headers: {
       // need to change this later to account for variables
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       query: `{
@@ -33,24 +33,7 @@ export const matchMQ = async (
                   }
               }
           }
-        }
-    }`,
-    }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      mutationArray = data.data.__schema.mutationType.fields;
-    });
-  const queryIntrospect = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      // need to change this later to account for variables
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: `{
-           __schema {
-            queryType{
+              queryType{
                 name
                 fields{
                     name
@@ -63,23 +46,24 @@ export const matchMQ = async (
                     }
                 }
             }
-          }
-      }`,
+        }
+    }`,
     }),
   })
     .then((res) => res.json())
     .then((data) => {
+      mutationArray = data.data.__schema.mutationType.fields;
       queryArray = data.data.__schema.queryType.fields;
     });
+
   console.log(queryArray, mutationArray);
   for (let i = 0; i < queryArray.length; i++) {
     for (let k = 0; k < mutationArray.length; k++) {
       if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
-        console.log(queryArray[i], " matches with ", mutationArray[k]);
-        console.log("match found");
+        console.log(queryArray[i], ' matches with ', mutationArray[k]);
+        console.log('match found');
         localStorage.removeItem(queryArray[i].name);
         console.log('Data is invalid removed from cache');
-
       }
     }
   }
@@ -109,7 +93,7 @@ export const grabQueryName = (query: string): any => {
         // access the selections arrays first element (which is an object)
         const firstSelection = node.selectionSet.selections[0];
         // if firstSelection exists and the kind value of that property is field (which it has to be in order to have a name property)
-        if (firstSelection && firstSelection.kind === "Field") {
+        if (firstSelection && firstSelection.kind === 'Field') {
           // set mutationNodeValue to the name keys associated value
           NodeValue = firstSelection.name.value;
           //console.log('mutation name:', mutationNodeValue);

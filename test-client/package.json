@@ -4,6 +4,7 @@
   "main": "./distTSC/src/client/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"webpack-dev-server\" \"nodemon ./src/server/server.ts\"",
     "start": "webpack-dev-server",
     "serv": "nodemon ./src/server/server.ts",
     "build": "webpack"
