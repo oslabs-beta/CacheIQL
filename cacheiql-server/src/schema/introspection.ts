@@ -1,5 +1,4 @@
 // Handles GraphQL introspection
-
 import {
   getIntrospectionQuery,
   graphql,
@@ -7,6 +6,11 @@ import {
   getNamedType,
   isObjectType,
 } from "graphql";
+
+/**
+ * Stores entity relationships globally to be used by cache tracking
+ */
+export let entityRelationships: Record<string, string[]> = {};
 
 /**
  * Fetches and returns the GraphQL schema introspection result.
@@ -32,13 +36,11 @@ export async function getSchemaIntrospection(schema: GraphQLSchema) {
 }
 
 /**
- * Extracts entity relationships from a GraphQL schema.
+ * Extracts entity relationships from a GraphQL schema and stores them.
  * @param schema - The GraphQLSchema object.
- * @returns A map of entity relationships.
  */
-export function extractEntityRelationships(
-  schema: GraphQLSchema
-): Record<string, string[]> {
+export function extractEntityRelationships(schema: GraphQLSchema) {
+  
   const typeMap = schema.getTypeMap();
   const relationships: Record<string, string[]> = {};
 
@@ -48,10 +50,22 @@ export function extractEntityRelationships(
     if (isObjectType(type)) {
       const fields = type.getFields();
       relationships[typeName] = Object.values(fields)
-        .map((field) => getNamedType(field.type).name)
+        // .map((field) => getNamedType(field.type).name)
+        .map((field) =>
+          getNamedType(field.type)
+            .toString()
+            .replace(/[[\]!]/g, "")
+        )
         .filter((relatedType) => relatedType !== typeName); // Avoid self-referencing
     }
   }
 
-  return relationships;
+  // Store relationships globally for tracking dependencies
+  entityRelationships = relationships;
+  console.log("Extracted Entity Relationships:", entityRelationships);
+  console.log(
+    "🔍 Extracted Entity Relationships:",
+    JSON.stringify(entityRelationships, null, 2)
+  );
+
 }

@@ -1,9 +1,6 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const {
-  cacheMiddleware,
-  cacheMutationMiddleware,
-} = require("../../../cacheiql-server/src/middleware/cacheMiddleware.ts");
+const { cacheMiddleware } = require("../../../cacheiql-server/src/middleware/cacheMiddleware.ts");
 //const { buildSchema } = require('graphql');
 //keep as require call to avoid err
 //const db = require('./models/starWarsModels');
@@ -23,10 +20,7 @@ app.use(
   graphqlHTTP({
     schema: graphqlSchema,
     //rootValue:rootValue,
-    rootValue: {
-      ...cacheMiddleware(rootValue, TTL_IN_SECONDS),
-      ...cacheMutationMiddleware(rootValue),
-    },
+    rootValue: cacheMiddleware(rootValue, TTL_IN_SECONDS, graphqlSchema),
     graphiql: true,
   })
 );

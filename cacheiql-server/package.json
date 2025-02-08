@@ -24,7 +24,6 @@
   "homepage": "https://github.com/oslabs-beta/CacheIQL/tree/readme#readme",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "graphql": "^16.9.0",
     "redis": "^4.7.0",
     "tsc": "^2.0.4"
   },
@@ -35,5 +34,9 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "graphql": "^15.10.1"
   }
+ 
 }

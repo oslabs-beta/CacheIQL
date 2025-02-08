@@ -1,4 +1,5 @@
 import { getRedisClient, connectRedis } from './redisClient';
+import { entityRelationships } from "../schema/introspection";
 
 // Ensures Redis is initialized before executing any caching operations.
 (async () => {
@@ -119,58 +120,44 @@ export const getData = async (
     throw error;
   }
 };
-// Example function to fetch data from a database (you would replace this with your actual database query logic)
-// async function fetchFromDb() {
-//   // Simulating a database fetch (replace with actual DB query)
-//   return { message: 'Data from database' };
-// }
 
-/**
- * Tracks cache keys for an entity.
- * Each GraphQL query stores its cache key under a Redis Set named after the entity (ex: trackedKeys:User).
- * @param entity - The GraphQL entity.
- * @param cacheKey - The cache key to track.
- */
-// const MAX_CACHE_KEYS_PER_ENTITY = 500; // Prevents Redis overflow
-// export const trackCacheKey = async (entity: string, cacheKey: string) => {
-//   try {
-//     const client = await getRedisClient();
-//     const trackingKey = `trackedKeys:${entity}`;
-//     await client.sAdd(trackingKey, cacheKey); // Add the cache key to the set
-//     console.log(
-//       `✅ Tracked cache key: ${cacheKey} under entity: ${trackingKey}`
-//     );
-//     // Trim the set if it exceeds the max limit
-//     const cacheSize = await client.sCard(trackingKey);
-//     if (cacheSize > MAX_CACHE_KEYS_PER_ENTITY) {
-//       const oldKeys = await client.sPop(
-//         trackingKey,
-//         cacheSize - MAX_CACHE_KEYS_PER_ENTITY
-//       );
-//       if (oldKeys) {
-//         await Promise.all(oldKeys.map((key) => client.del(key)));
-//       }
-//     }
-//   } catch (error) {
-//     console.error(`Error tracking cache key for entity "${entity}":`, error);
-//   }
-// };
 
 /**
  * Tracks cache dependencies per entity.
  * This ensures that when an entity changes, only affected fields are invalidated.
+ *  Now also tracks relationships based on introspection.
  * @param cacheKey - The cache key to track.
  * @param entity - The entity name.
  */
-export const trackCacheDependency = async (cacheKey: string, entity: string) => {
+
+export const trackCacheDependency = async (
+  cacheKey: string,
+  entity: string
+) => {
   try {
     const client = await getRedisClient();
     const trackingKey = `dependencyKeys:${entity}`;
+
+    // Store cache key for the main entity
     await client.sAdd(trackingKey, cacheKey);
+
+    // Store cache keys for related entities (bidirectional)
+    const relatedEntities = entityRelationships[entity] || [];
+    for (const relatedEntity of relatedEntities) {
+      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
+      await client.sAdd(relatedTrackingKey, cacheKey);
+
+      // Also track the reverse dependency (parent ↔ child)
+      await client.sAdd(trackingKey, `dependencyKeys:${relatedEntity}`);
+    }
   } catch (error) {
-    console.error(`Error tracking cache dependency for entity "${entity}":`, error);
+    console.error(
+      `Error tracking cache dependency for entity "${entity}":`,
+      error
+    );
   }
 };
+
 
 /**
  * Invalidates cache entries for a specific entity after a mutation.
@@ -182,23 +169,40 @@ export const invalidateCacheForMutation = async (entity: string) => {
     const client = await getRedisClient();
     const trackingKey = `dependencyKeys:${entity}`;
 
-    const cacheKeys: string[] = await client.sMembers(trackingKey);
-    console.log(
-      `Found ${cacheKeys.length} cache keys to delete for entity: ${entity}`
-    );
+    // Get cache keys for the main entity
+    let cacheKeys: string[] = await client.sMembers(trackingKey);
 
+    // Also find and remove cache keys for related entities
+    const relatedEntities = entityRelationships[entity] || [];
+    for (const relatedEntity of relatedEntities) {
+      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
+      const relatedKeys: string[] = await client.sMembers(relatedTrackingKey);
+      cacheKeys.push(...relatedKeys);
+    }
 
+    // Remove all affected cache entries
     if (cacheKeys.length > 0) {
-      await Promise.all(cacheKeys.map((key) => client.del(`myApp:${key}`)));
-      await client.del(trackingKey);
-      console.log(`Invalidated cache for entity: ${entity}`);
+      await Promise.all(cacheKeys.map((key) => client.del(key)));
+      console.log(
+        `✅ Invalidated ${cacheKeys.length} cache keys for ${entity} and related entities.`
+      );
     } else {
       console.log(`No cache keys found for entity: ${entity}`);
     }
+    // 🔥 NEW: Remove the dependency tracking key itself
+    await client.del(trackingKey); // Deletes `dependencyKeys:Person`
+    for (const relatedEntity of relatedEntities) {
+      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
+      await client.del(relatedTrackingKey);
+    }
+
+    console.log(
+      `✅ Dependency tracking removed for ${entity} and related entities.`
+    );
   } catch (error) {
     console.error(`Error invalidating cache for entity "${entity}":`, error);
-    
   }
 };
+
 
 
