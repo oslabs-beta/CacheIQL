@@ -37,9 +37,6 @@ export const connectRedis = async (
  * Returns the Redis client instance
  * @throws Error if the client is not connected
  */
-//Makes sure that we use the set get del methods, basically a type that is from the typescript library just like string | num | boolean
-//RedisClientType ensures type safety. If you attempt to call a method that doesn’t exist on the client or pass incorrect arguments, TypeScript will catch that during development.
-
 export const getRedisClient = async (): Promise<RedisClientType> => {
   if (!client || !client.isOpen) {
     console.warn("Redis client not connected. Attempting to reconnect...");
@@ -50,13 +47,6 @@ export const getRedisClient = async (): Promise<RedisClientType> => {
 };
 
 
-// export const getRedisClient = (): RedisClientType => {
-//   if (!client || !client.isOpen) {
-//     console.warn('Redis client not connected. Attempting to reconnect...');
-//     connectRedis();
-//   }
-//   return client;
-// };
 
 /**
  * Disconnects the Redis client

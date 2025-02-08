@@ -184,12 +184,12 @@ export const invalidateCacheForMutation = async (entity: string) => {
     if (cacheKeys.length > 0) {
       await Promise.all(cacheKeys.map((key) => client.del(key)));
       console.log(
-        `✅ Invalidated ${cacheKeys.length} cache keys for ${entity} and related entities.`
+        `Invalidated ${cacheKeys.length} cache keys for ${entity} and related entities.`
       );
     } else {
       console.log(`No cache keys found for entity: ${entity}`);
     }
-    // 🔥 NEW: Remove the dependency tracking key itself
+    // Remove the dependency tracking key itself
     await client.del(trackingKey); // Deletes `dependencyKeys:Person`
     for (const relatedEntity of relatedEntities) {
       const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
@@ -197,7 +197,7 @@ export const invalidateCacheForMutation = async (entity: string) => {
     }
 
     console.log(
-      `✅ Dependency tracking removed for ${entity} and related entities.`
+      `Dependency tracking removed for ${entity} and related entities.`
     );
   } catch (error) {
     console.error(`Error invalidating cache for entity "${entity}":`, error);

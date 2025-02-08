@@ -50,7 +50,6 @@ export function extractEntityRelationships(schema: GraphQLSchema) {
     if (isObjectType(type)) {
       const fields = type.getFields();
       relationships[typeName] = Object.values(fields)
-        // .map((field) => getNamedType(field.type).name)
         .map((field) =>
           getNamedType(field.type)
             .toString()
@@ -64,7 +63,7 @@ export function extractEntityRelationships(schema: GraphQLSchema) {
   entityRelationships = relationships;
   console.log("Extracted Entity Relationships:", entityRelationships);
   console.log(
-    "🔍 Extracted Entity Relationships:",
+    "Extracted Entity Relationships:",
     JSON.stringify(entityRelationships, null, 2)
   );
 
