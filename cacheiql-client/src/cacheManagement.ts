@@ -1,11 +1,10 @@
 import { Query, Mutation } from './types';
 import { generateKey } from './generatekey';
 
-
 // cacheManager --- function for time-based cache management (removes cached data from local storage)
 export const cacheManager = (key: Query | Mutation, time: number = 60) => {
   // the amount of time passed in is how long the cache will stay within local storage;
-  
+
   setTimeout(() => {
     const query = key;
     for (let i = 0; i < localStorage.length; i++) {
@@ -21,14 +20,15 @@ export const cacheManager = (key: Query | Mutation, time: number = 60) => {
 export const checkAndSaveToCache = (
   query: Query,
   response?: object,
-  variables?: object 
+  variables?: object
 ): string | void | boolean | object => {
   if (query === null) {
     return 'query is null';
   }
+
   const queryString = query;
   //console.log(queryString);
-  
+
   // function to create key for caching (key will be query string, value is response)
   const key = generateKey(queryString, variables);
 

@@ -4,9 +4,9 @@ import { cacheiqItType, queryArray, mutationArray } from './types';
 
 export const cacheIt = ({
   endpoint,
-  query, 
+  query,
   mutation,
-  time
-}:cacheiqItType): any => {
-  return cacheiqIt({endpoint, query, mutation, time});
+  time,
+}: cacheiqItType): any => {
+  return cacheiqIt({ endpoint, query, mutation, time });
 };
