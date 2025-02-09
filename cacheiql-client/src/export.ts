@@ -7,8 +7,6 @@ import { db } from './indexDB';
 
 // cacheiqIt --- function that makes fetch
 
-const DB = db;
-
 export const cacheiqIt = async ({
   endpoint,
   query,
