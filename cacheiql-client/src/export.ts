@@ -3,9 +3,6 @@ import { createClientError } from './errorhandling';
 import { checkAndSaveToCache, cacheManager } from './cacheManagement';
 import { matchMQ } from './mutationHandler';
 import { grabQueryName } from './mutationHandler';
-import { db } from './indexDB';
-
-// cacheiqIt --- function that makes fetch
 
 export const cacheiqIt = async ({
   endpoint,

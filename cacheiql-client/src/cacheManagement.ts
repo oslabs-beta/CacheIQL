@@ -52,3 +52,7 @@ export const checkAndSaveToCache = (
     return false;
   }
 };
+
+export const checkAndSaveToCache2 = (
+  item: any
+): string | void | boolean | object => {};

@@ -46,7 +46,6 @@ export type cacheiqItType = {
 };
 
 export type createDBType = {
-  newDatabaseName?: string;
-  newVersion: number;
-  newObjectStoreName: string;
+  newVersion?: number;
+  newObjectStoreName?: string;
 };

@@ -1,86 +1,65 @@
-import { createDBType } from './types';
+export const openDB = (
+  dbName: string,
+  storeName: string,
+  version = 1
+): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, version);
 
-//this file initializes the indexDB database
-export function db() {
-  let initialized = false;
-  let db: any;
-  let version: number = 4;
-  let databaseName: string = 'cacheit';
-  let objectStoreName: string = 'query';
-  async function createDB({
-    newDatabaseName,
-    newVersion,
-    newObjectStoreName,
-  }: createDBType): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      if (initialized) {
-        reject(new Error('Database has already been created'));
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName);
       }
-      if (newObjectStoreName) {
-        objectStoreName = newObjectStoreName;
-      }
-      if (newDatabaseName) {
-        databaseName = newDatabaseName;
-      }
-      if (newVersion) {
-        version = newVersion;
-      }
-      const DBopenRequest = window.indexedDB.open(databaseName, version);
+    };
 
-      //if there is an error opening the database it consoles an error
-      DBopenRequest.onerror = (event) => {
-        console.error('Error loading database');
-      };
+    request.onsuccess = (event) => {
+      resolve((event.target as IDBOpenDBRequest).result);
+    };
 
-      //if it succeeds it sets db equal to the result object
-      DBopenRequest.onsuccess = (event) => {
-        db = DBopenRequest.result;
+    request.onerror = (event) => {
+      reject((event.target as IDBOpenDBRequest).error);
+    };
+  });
+};
 
-        console.log(`database ${databaseName} initialized`);
-        initialized = true;
-        resolve(db);
-      };
-
-      DBopenRequest.onupgradeneeded = (event: any) => {
-        db = event.target.result;
-        if (!db.objectStoreNames.contains(objectStoreName)) {
-          console.log(`creating object store: ${objectStoreName}`);
-          db.createObjectStore(objectStoreName, { autoIncrement: true });
-        } else {
-          console.log(`object store ${objectStoreName} already exists`);
-        }
-
-        db.onerror = (event: any) => {
-          console.error('error during database upgrade:', event.target.error);
-          reject(event.target.error);
-        };
-      };
-    });
-  }
-
-  function addItem(passedData: string | object) {
-    if (!initialized || !db) {
-      return 'database is uninitialized run createDB()';
-    }
-    const transaction = db.transaction(objectStoreName, 'readwrite');
-    const store = transaction.objectStore(objectStoreName);
-    const request = store.add({ data: passedData });
-
-    request.oncomplete = () => {
-      console.log('data was succesfully added to the object store');
+export const addItem = (
+  db: any,
+  storeName: string,
+  key: string,
+  data: any
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const request = store.put(data, key);
+    request.onsuccess = () => {
+      resolve(); // Resolve the promise when the operation is successful
     };
 
     request.onerror = (event: Event) => {
-      console.error('Error adding data:', (event.target as IDBRequest).error);
+      reject((event.target as IDBRequest).error); // Reject the promise if there's an error
     };
-  }
+  });
+};
 
-  function deleteDatabase() {
-    if (initialized) indexedDB.deleteDatabase(databaseName);
-    else return 'there is no database to delete';
-  }
+export const getItem = async (
+  db: any,
+  dbName: string,
+  storeName: string,
+  key: string
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readonly');
+    const store = transaction.objectStore(storeName);
+    const request = store.get(key);
 
-  return { createDB, addItem, deleteDatabase };
-}
+    request.onsuccess = (event: Event) => {
+      resolve((event.target as IDBRequest).result);
+    };
 
-//this is how the database is opened, it gives it the name cacheIt and sets the version to 4
+    request.onerror = (event: Event) => {
+      reject((event.target as IDBRequest).error);
+    };
+  });
+};

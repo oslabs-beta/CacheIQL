@@ -3,67 +3,96 @@ import { queryArray, mutationArray } from './types';
 import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
 import { createClientError } from './errorhandling';
+import { openDB, addItem, getItem } from './indexDB';
 
 export const matchMQ = async (
   endpoint: string | URL,
   response?: any
 ): Promise<string | object | null | void> => {
-  let mutationArray: readonly mutationArray[] = [];
-  let queryArray: readonly queryArray[] = [];
-  const mutationIntrospect = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      // need to change this later to account for variables
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: `{
-         __schema {
-          mutationType{
-              name
-              fields{
-                  name
-                  type{
-                      name
-                      kind
-                      ofType {
-                            name
-                            kind
-                  }
-                  }
-              }
-          }
-              queryType{
+  const dbName = 'Schema';
+  const storeName = 'SchemaStore';
+
+  const db = await openDB(dbName, storeName);
+  if (
+    (await getItem(db, dbName, storeName, 'mutationArray')) &&
+    (await getItem(db, dbName, storeName, 'queryArray')) &&
+    (await getItem(db, dbName, storeName, 'schema'))
+  ) {
+    console.log('mutation and query schemas are already cached');
+    const mutationArray = await getItem(db, dbName, storeName, 'mutationArray');
+    const queryArray = await getItem(db, dbName, storeName, 'queryArray');
+    for (let i = 0; i < queryArray.length; i++) {
+      for (let k = 0; k < mutationArray.length; k++) {
+        if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
+          console.log(queryArray[i], ' matches with ', mutationArray[k]);
+          console.log('match found');
+          localStorage.removeItem(queryArray[i].name);
+          console.log('Data is invalid removed from cache');
+        }
+      }
+    }
+  } else {
+    let mutationArray: readonly mutationArray[] = [];
+    let queryArray: readonly queryArray[] = [];
+
+    const mutationIntrospect = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        // need to change this later to account for variables
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `{
+           __schema {
+            mutationType{
                 name
                 fields{
                     name
                     type{
                         name
                         kind
-                        ofType{
-                        name
-                        }
+                        ofType {
+                              name
+                              kind
+                    }
                     }
                 }
             }
-        }
-    }`,
-    }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      mutationArray = data.data.__schema.mutationType.fields;
-      queryArray = data.data.__schema.queryType.fields;
-    });
+                queryType{
+                  name
+                  fields{
+                      name
+                      type{
+                          name
+                          kind
+                          ofType{
+                          name
+                          }
+                      }
+                  }
+              }
+          }
+      }`,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        mutationArray = data.data.__schema.mutationType.fields;
+        queryArray = data.data.__schema.queryType.fields;
+        addItem(db, storeName, 'schema', data.data);
+        addItem(db, storeName, 'mutationArray', mutationArray);
+        addItem(db, storeName, 'queryArray', queryArray);
+      });
 
-  console.log(queryArray, mutationArray);
-  for (let i = 0; i < queryArray.length; i++) {
-    for (let k = 0; k < mutationArray.length; k++) {
-      if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
-        console.log(queryArray[i], ' matches with ', mutationArray[k]);
-        console.log('match found');
-        localStorage.removeItem(queryArray[i].name);
-        console.log('Data is invalid removed from cache');
+    console.log(queryArray, mutationArray);
+    for (let i = 0; i < queryArray.length; i++) {
+      for (let k = 0; k < mutationArray.length; k++) {
+        if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
+          console.log(queryArray[i], ' matches with ', mutationArray[k]);
+          console.log('match found');
+          localStorage.removeItem(queryArray[i].name);
+          console.log('Data is invalid removed from cache');
+        }
       }
     }
   }
