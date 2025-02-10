@@ -4,6 +4,7 @@ const { default: test } = require('node:test');
 module.exports = {
   mode: 'development',
   entry: './src/client/index.tsx',
+
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'main.js',

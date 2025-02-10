@@ -3,7 +3,7 @@ import { queryArray, mutationArray } from './types';
 import { visit } from 'graphql';
 import { DocumentNode } from 'graphql';
 import { createClientError } from './errorhandling';
-import { openDB, addItem, getItem } from './indexDB';
+import { openDB, addItem, getItem, deleteItem } from './indexDB';
 
 export const matchMQ = async (
   endpoint: string | URL,
@@ -13,21 +13,19 @@ export const matchMQ = async (
   const storeName = 'SchemaStore';
 
   const db = await openDB(dbName, storeName);
-  if (
-    (await getItem(db, dbName, storeName, 'mutationArray')) &&
-    (await getItem(db, dbName, storeName, 'queryArray')) &&
-    (await getItem(db, dbName, storeName, 'schema'))
-  ) {
+  const queryDB = await openDB('Query', 'QueryStore');
+  const mutationArray = await getItem(db, storeName, 'mutationArray');
+  const queryArray = await getItem(db, storeName, 'queryArray');
+  if (mutationArray && queryArray) {
     console.log('mutation and query schemas are already cached');
-    const mutationArray = await getItem(db, dbName, storeName, 'mutationArray');
-    const queryArray = await getItem(db, dbName, storeName, 'queryArray');
     for (let i = 0; i < queryArray.length; i++) {
       for (let k = 0; k < mutationArray.length; k++) {
         if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
           console.log(queryArray[i], ' matches with ', mutationArray[k]);
           console.log('match found');
-          localStorage.removeItem(queryArray[i].name);
-          console.log('Data is invalid removed from cache');
+          //localStorage.removeItem(queryArray[i].name);
+          deleteItem(queryDB, 'QueryStore', queryArray[i].name);
+          //console.log('Data is invalid removed from cache');
         }
       }
     }
@@ -84,14 +82,14 @@ export const matchMQ = async (
         addItem(db, storeName, 'queryArray', queryArray);
       });
 
-    console.log(queryArray, mutationArray);
+    //console.log(queryArray, mutationArray);
     for (let i = 0; i < queryArray.length; i++) {
       for (let k = 0; k < mutationArray.length; k++) {
         if (queryArray[i].type.ofType.name === mutationArray[k].type.name) {
-          console.log(queryArray[i], ' matches with ', mutationArray[k]);
-          console.log('match found');
-          localStorage.removeItem(queryArray[i].name);
-          console.log('Data is invalid removed from cache');
+          //console.log(queryArray[i], ' matches with ', mutationArray[k]);
+          //console.log('match found');
+          deleteItem(queryDB, 'QueryStore', queryArray[i].name);
+          //console.log('Data is invalid removed from cache');
         }
       }
     }

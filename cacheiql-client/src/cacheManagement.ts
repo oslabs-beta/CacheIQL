@@ -1,18 +1,17 @@
 import { Query, Mutation } from './types';
 import { generateKey } from './generatekey';
-
+import { addItem, getItem, deleteItem, openDB } from './indexDB';
 // cacheManager --- function for time-based cache management (removes cached data from local storage)
-export const cacheManager = (key: Query | Mutation, time: number = 60) => {
+export const cacheManager = async (
+  db: any,
+  storeName: string,
+  key: string,
+  time: number = 60
+) => {
   // the amount of time passed in is how long the cache will stay within local storage;
 
   setTimeout(() => {
-    const query = key;
-    for (let i = 0; i < localStorage.length; i++) {
-      if (localStorage.key(i) === query) {
-        localStorage.removeItem(query);
-        return;
-      }
-    }
+    deleteItem(db, 'QueryStore', key);
   }, time * 1000);
 };
 
@@ -53,6 +52,18 @@ export const checkAndSaveToCache = (
   }
 };
 
-export const checkAndSaveToCache2 = (
-  item: any
-): string | void | boolean | object => {};
+export const checkAndSaveToCache2 = async (
+  db: any,
+
+  storeName: string,
+  itemKey: string,
+  itemData?: any
+): Promise<string | void | boolean | object> => {
+  const item = await getItem(db, storeName, itemKey);
+  if (item) {
+    return true;
+  } else if (!item && itemData) {
+    await addItem(db, storeName, itemKey, itemData);
+    return true;
+  } else return false;
+};
