@@ -1,34 +1,48 @@
-// // Parses GraphQL queries into fields/subfields
-// // Extracts which entities (types) are being queried
-// // Stores these entities to track dependencies
+// Parses GraphQL queries into fields/subfields
+// Extracts which entities (types) are being queried
 
-// import { GraphQLResolveInfo, getNamedType, isObjectType } from "graphql";
 
-// /**
-//  * Extracts the root-level GraphQL entity types from a query.
-//  * @param info - GraphQLResolveInfo object provided to the resolver.
-//  * @returns An array of entity names being queried.
-//  */
-// export function extractEntities(info: GraphQLResolveInfo): string[] {
-//   console.log("extractEntities function invoked in QueryParser");
-//   const entities: Set<string> = new Set();
 
-//   // Get the parent type (Query, Mutation)
-//   const operationType = info.parentType;
+import { GraphQLResolveInfo, SelectionNode, FieldNode, FragmentSpreadNode, InlineFragmentNode } from "graphql";
 
-//   // Get all requested fields from the query
-//   info.fieldNodes.forEach((field) => {
-//     const fieldDef = operationType.getFields()[field.name.value];
+/**
+ * Parses a GraphQL query and extracts fields and subfields.
+ * @param info GraphQLResolveInfo from the resolver.
+ * @returns A structured representation of the query fields.
+ */
+export const parseQueryFields = (info: GraphQLResolveInfo): Record<string, any> => {
+  return collectFields(info, info.fieldNodes);
+};
 
-//     if (fieldDef) {
-//       // Extract the base entity type
-//       const entityType = getNamedType(fieldDef.type);
+/**
+ * Recursively collects fields from the GraphQLResolveInfo object.
+ * @param info GraphQLResolveInfo
+ * @param nodes Array of selection nodes
+ * @param path Path of the current field (for nested structures)
+ * @returns A structured object representing the fields and subfields.
+ */
+const collectFields = (info: GraphQLResolveInfo, nodes: readonly SelectionNode[], path: string = ""): Record<string, any> => {
+  const fields: Record<string, any> = {};
 
-//       if (isObjectType(entityType)) {
-//         entities.add(entityType.name);
-//       }
-//     }
-//   });
-//   console.log("Extracted Entities:", Array.from(entities)); // Debugging log
-//   return Array.from(entities);
-// }
+  for (const node of nodes) {
+    if (node.kind === "Field") {
+      const fieldNode = node as FieldNode;
+      const fieldName = fieldNode.name.value;
+
+      if (fieldNode.selectionSet) {
+        fields[fieldName] = collectFields(info, fieldNode.selectionSet.selections, path + "." + fieldName);
+      } else {
+        fields[fieldName] = true;
+      }
+    } else if (node.kind === "FragmentSpread") {
+      const fragmentNode = info.fragments[(node as FragmentSpreadNode).name.value];
+      if (fragmentNode) {
+        Object.assign(fields, collectFields(info, fragmentNode.selectionSet.selections, path));
+      }
+    } else if (node.kind === "InlineFragment") {
+      Object.assign(fields, collectFields(info, (node as InlineFragmentNode).selectionSet.selections, path));
+    }
+  }
+
+  return fields;
+};

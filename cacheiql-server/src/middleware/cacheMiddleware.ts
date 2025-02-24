@@ -11,6 +11,7 @@ import {
 } from "../schema/introspection"; // Import entity extraction
 import { GraphQLResolveInfo, GraphQLSchema } from "graphql";
 import { hashKey } from "../cache/cacheUtils";
+import { parseQueryFields } from "../query/queryParser";
 
 // Global variable to track whether introspection has been initialized
 let introspectionInitialized = false;
@@ -46,18 +47,22 @@ export const cacheMiddleware = (
         );
         return await resolve(parent, args, info, context);
       }
+      // Parse the query fields from GraphQLResolveInfo
+      const parsedFields = parseQueryFields(info);
+      console.log("Parsed Query Fields:", parsedFields);
 
       console.log(
         `cacheMiddleware triggered for: ${info.fieldName} (Type: ${info.operation?.operation})`
       );
 
-  
-    
-      const entityType = info.returnType.toString().replace(/[[\]!]/g, ""); // Extract correct entity name
+      const entityType = info.returnType.toString().replace(/[[\]!]/g, ""); // Extract entity name
       const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1); // Capitalize first letter
 
       const sortedArgs = JSON.stringify(args, Object.keys(args).sort()); // Ensure consistent key order
-      const rawKey = `${entity}:${info.fieldName}:${sortedArgs}`;
+      // const rawKey = `${entity}:${info.fieldName}:${sortedArgs}`;
+       const rawKey = `${entity}:${
+         info.fieldName
+       }:${sortedArgs}:${JSON.stringify(parsedFields)}`;
       const cacheKey = hashKey(rawKey);
 
       // Handle Queries (Caching)

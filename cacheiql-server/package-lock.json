@@ -2117,6 +2117,16 @@
       "dev": true,
       "license": "ISC"
     },
+    "node_modules/graphql": {
+      "version": "15.10.1",
+      "resolved": "https://registry.npmjs.org/graphql/-/graphql-15.10.1.tgz",
+      "integrity": "sha512-BL/Xd/T9baO6NFzoMpiMD7YUZ62R6viR5tp/MULVEnbYJXZA//kRNW7J0j1w/wXArgL0sCxhDfK5dczSKn3+cg==",
+      "license": "MIT",
+      "peer": true,
+      "engines": {
+        "node": ">= 10.x"
+      }
+    },
     "node_modules/has-flag": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",

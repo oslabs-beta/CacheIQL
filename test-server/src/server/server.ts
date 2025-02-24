@@ -11,8 +11,7 @@ const app = express();
 
 
 const TTL_IN_SECONDS = 1000;
-// const rootValueWithCache = cacheMiddleware(rootValue, TTL_IN_SECONDS);
-// const rootValueWithMutations = cacheMutationMiddleware(rootValue);
+
 app.use(
   "/graphql",
   graphqlHTTP({
