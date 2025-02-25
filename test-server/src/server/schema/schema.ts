@@ -38,6 +38,7 @@ module.exports = buildSchema(`
     input ReviewInput{
     text:String!
     movie_id: Int!
+    fettyWap: String!
     }
     
     input PersonInput {
@@ -53,8 +54,11 @@ module.exports = buildSchema(`
         height: Int
     }   
     type Query {
-    people: [Person]
-    person(id: ID!): Person
+
+    people: [person]
+    person(id: ID!): person!
+    reviews: [review]
+
     }
             
     type Mutation{

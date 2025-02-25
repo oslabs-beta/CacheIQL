@@ -17,7 +17,9 @@ app.use(
   graphqlHTTP({
     schema: graphqlSchema,
     //rootValue:rootValue,
+
     rootValue: cacheMiddleware(rootValue, TTL_IN_SECONDS, graphqlSchema),
+
     graphiql: true,
   })
 );
