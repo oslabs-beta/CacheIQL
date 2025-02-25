@@ -66,7 +66,7 @@ const Dashboard = () => {
     }
    }
   `,
-      time: 3600,
+      time: 1,
     });
     // --> variables
   };
