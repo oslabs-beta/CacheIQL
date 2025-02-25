@@ -36,7 +36,7 @@ export const mutationTypes: MutationTypeSpecifier = {
   create: ['create', 'add', 'new', 'make'],
 };
 
-// 
+// typing for main fetching/caching function, cacheiqIt (see export.ts)
 export type cacheiqItType = {
   endpoint: string | URL;
   query?: Query;

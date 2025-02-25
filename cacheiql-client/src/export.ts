@@ -1,4 +1,4 @@
-import { cacheiqItType, queryArray, mutationArray } from "./types";
+import { cacheiqItType } from "./types";
 import { createClientError } from "./errorhandling";
 import { checkAndSaveToCache, cacheManager } from "./cacheManagement";
 import { matchMQ } from "./mutationHandler";
@@ -13,7 +13,6 @@ export const cacheiqIt = async ({
 }: cacheiqItType): Promise<string | object | null | void | JSON> => {
   if (query) {
     if (typeof query !== "string") {
-      //console.log(typeof query)
       console.error(
         createClientError(
           "Query passed in is invalid. Please check to make sure its a string"
@@ -24,10 +23,10 @@ export const cacheiqIt = async ({
     // logic for querying DB for uncached queries, retrieving cached queries & responses from localStorage
     if (query !== null) {
       try {
-        const queryname = grabQueryName(query);
+        const queryname: string = grabQueryName(query);
         // if query is not cached, make fetch to DB
         if (!checkAndSaveToCache(queryname) && typeof query === "string") {
-          const response: any = await fetch(endpoint, {
+          const response: Promise<object> = await fetch(endpoint, {
             method: "POST",
             headers: {
               // need to change this later to account for variables
@@ -49,19 +48,15 @@ export const cacheiqIt = async ({
             });
           return response;
         } else {
-          // variable to hold query string (either pulled from object or as is)
-          const queryString = grabQueryName(query);
           // instead of storing the error object, this returns early with the error
           // reassurance operator !
-          //console.log(queryString);
           if (JSON.parse(localStorage.getItem(queryname)!).errors) {
             console.error(
               JSON.parse(localStorage.getItem(queryname)!).errors[0]
             );
             return;
           }
-          // console.log('query & response found in cache!');
-          const response: any = JSON.parse(localStorage.getItem(queryname)!);
+          const response: object = JSON.parse(localStorage.getItem(queryname)!);
           return response;
         }
       } catch (err) {
@@ -79,7 +74,7 @@ export const cacheiqIt = async ({
     if (typeof mutation !== "string") {
       console.error(
         createClientError(
-          "Mutation passed in is invalid. Please check to make sure its a string"
+          "Mutation passed in is invalid. Please check to make sure its a string."
         )
       );
     }
@@ -88,7 +83,7 @@ export const cacheiqIt = async ({
       try {
         // if query is not cached, make fetch to DB
         if (!checkAndSaveToCache(mutation) && typeof mutation === "string") {
-          const response: any = await fetch(endpoint, {
+          const response: Promise<object> = await fetch(endpoint, {
             method: "POST",
             headers: {
               // need to change this later to account for variables
@@ -104,6 +99,7 @@ export const cacheiqIt = async ({
                 return;
               }
               matchMQ(endpoint);
+              console.log('matchMQ func:',  matchMQ(endpoint));
               cacheManager(mutation, time);
               return data;
             });
@@ -119,8 +115,7 @@ export const cacheiqIt = async ({
             );
             return;
           }
-          // console.log('query & response found in cache!');
-          const response: any = JSON.parse(
+          const response: object = JSON.parse(
             localStorage.getItem(mutationString)!
           );
           return response;
