@@ -13,7 +13,9 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/react-dom": "^19.0.2",
+    "@types/graphql": "^14.2.3",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "nodemon": "^3.1.7",
     "ts-loader": "^9.5.1",
     "tsc": "^2.0.4",
@@ -25,11 +27,16 @@
   "dependencies": {
     "express": "^4.21.2",
     "express-graphql": "^0.12.0",
-    "graphql": "^15.0.0",
     "html-webpack-plugin": "^5.6.3",
     "pg": "^8.13.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "ts-node": "^10.9.2"
+
+    "react-dom": "^19.0.0"
+  },
+  "peerDependencies": {
+    "graphql": "^15.10.1"
+  },
+  "resolutions": {
+    "graphql": "^15.10.1"
   }
 }

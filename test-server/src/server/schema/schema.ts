@@ -5,7 +5,7 @@ const { buildSchema } = require('graphql');
  * within the query
  */
 module.exports = buildSchema(`
-    type person{
+    type Person{
     _id:ID!
     name:String!
     mass:String
@@ -19,7 +19,7 @@ module.exports = buildSchema(`
     height:Int
     }
 
-    type movie{
+    type Movie{
     _id: ID!
     title: String!
     episode: Int!
@@ -29,7 +29,7 @@ module.exports = buildSchema(`
     release_date:Int!
     }
 
-    type review{
+    type Review{
     _id:ID!
     movie_id: Int!
     review:String!
@@ -40,14 +40,30 @@ module.exports = buildSchema(`
     movie_id: Int!
     fettyWap: String!
     }
-        
+    
+    input PersonInput {
+        name: String!
+        mass: String
+        hair_color: String
+        skin_color: String
+        eye_color: String
+        birth_year: String
+        gender: String
+        species_id: Int
+        homeworld_id: Int
+        height: Int
+    }   
     type Query {
+
     people: [person]
     person(id: ID!): person!
     reviews: [review]
+
     }
             
     type Mutation{
-    createReview(input: ReviewInput!): review
+    createReview(input: ReviewInput!): Review
+    createPerson(input: PersonInput!): Person
+    updatePerson(id: ID!, input: PersonInput!): Person
     }
     `);

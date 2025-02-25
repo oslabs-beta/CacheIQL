@@ -1,79 +1,98 @@
-import { setCacheQuery, getCachedQuery, invalidateCache } from '../cache/cacheManager';
-import { GraphQLResolveInfo } from 'graphql';
+import {
+  setCacheQuery,
+  getCachedQuery,
+  trackCacheDependency,
+  invalidateCacheForMutation,
+} from "../cache/cacheManager";
+import {
+  extractEntityRelationships,
+  entityRelationships,
+} from "../schema/introspection"; 
+import { GraphQLResolveInfo, GraphQLSchema } from "graphql";
+import { hashKey } from "../cache/cacheUtils";
+import { parseQueryFields } from "../query/queryParser";
 
-//takes the rootValue as input to wrap each resolver in caching logic
+
+let introspectionInitialized = false;
+
 export const cacheMiddleware = (
   rootValue: { [key: string]: Function },
-  ttl: number = 60
+  ttl: number = 60,
+  schema?: GraphQLSchema
 ) => {
-  //creates an empty object to store the modified resolver functions
+  if (!introspectionInitialized && schema) {
+    console.log(
+      "Running GraphQL Introspection to extract entity relationships..."
+    );
+    extractEntityRelationships(schema);
+    introspectionInitialized = true;
+  }
   const wrappedResolvers: { [key: string]: Function } = {};
-
-  //loops through all of the keys in rootValue
   Object.keys(rootValue).forEach((key) => {
-    //console.log(`wrapping resolver for ${key}`);
-
-    //stores the origional function
     const resolve = rootValue[key];
-
-    //creates a new wrapped version of the resolver
     wrappedResolvers[key] = async (
       parent: any,
       args: any,
-      info: GraphQLResolveInfo,
+      info?: GraphQLResolveInfo,
       context?: any
     ): Promise<any> => {
       if (!info) {
-        console.error('Missing GraphQlResolveInfo in cacheMiddleware');
-
-        return await resolve(parent, args, context, info as GraphQLResolveInfo);
+        console.error(
+          "Missing GraphQLResolveInfo in cacheMiddleware. Skipping caching."
+        );
+        return await resolve(parent, args, info, context);
       }
-      const parentType = info.parentType.name
-        ? info.parentType.name
-        : info.parentType;
+      const parsedFields = parseQueryFields(info);
+      const entityType = info.returnType.toString().replace(/[[\]!]/g, ""); // Extract entity name
+      const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1); // Capitalize first letter
+      const sortedArgs = JSON.stringify(args, Object.keys(args).sort()); // Ensure consistent key order
+       const rawKey = `${entity}:${
+         info.fieldName
+       }:${sortedArgs}:${JSON.stringify(parsedFields)}`;
+      const cacheKey = hashKey(rawKey);
 
-      const key = hashKey(`${info.parentType.name}:${info.fieldName}:${args}`);
-
-      try {
-        const cachedData = await getCachedQuery(key, ttl);
-        if (cachedData) {
-          //console.log(`Cache hit for ${key}`);
-
-          return cachedData;
+      // Handle Queries (Caching)
+      if (info.operation?.operation === "query") {
+        try {
+          // Try to get cached data
+          const cachedData = await getCachedQuery(cacheKey);
+          if (cachedData) {
+            return cachedData;
+          }
+          // Execute resolver and cache the result
+          const result = await resolve(parent, args, context, info);
+          await setCacheQuery(cacheKey, result, entity, { ttl });
+          // Track dependencies for cache invalidation
+          await trackCacheDependency(cacheKey, entity);
+          return result;
+        } catch (error) {
+          console.error(`Error processing query ${info.fieldName}:`, error);
+          throw new Error(
+            `Failed to resolve ${info.fieldName}. See logs for details.`
+          );
         }
-        //console.log(`Cache miss for ${key}`);
-        const result = await resolve(parent, args, context, info);
-        await setCacheQuery(key, result, ttl);
-        return result;
-      } catch (error) {
-        console.error(error);
       }
+      // Handle Mutations (Cache Invalidation)
+      if (info.operation?.operation === "mutation") {
+        try {
+          // Execute mutation first
+          const result = await resolve(parent, args, context, info);
+          // Invalidate cache for the main entity and related entities
+          await invalidateCacheForMutation(entity);
+          return result;
+        } catch (error) {
+          console.error(
+            `Error processing mutation "${info.fieldName}" for entity "${entity}":`,
+            error
+          );
+          throw new Error(`Mutation failed for ${info.fieldName}. Check logs.`);
+        }
+      }
+      // Default case: If the operation is not a query or mutation
+      return await resolve(parent, args, context, info);
     };
   });
-
-  //returns the object with all of the resolvers wrapped and ready
   return wrappedResolvers;
 };
-//hashing the function to make the key more secure by making it binary
-const hashKey = (string: string): string => {
-  let hash = 0;
 
-  if (string.length === 0) return hash.toString();
 
-  for (let i = 0; i < string.length; i++) {
-    let char = string.charCodeAt(i);
-    //shifts the hash position by 5 "<<" the same as x*(2^y)
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-
-  return hash.toString();
-};
-
-export const invalidateCacheForMutation = async (
-  mutationName: string,
-  args: any
-) => {
-  // Invalidation logic based on your schema's mutation side effects
-  console.log(`Invalidating cache for mutation: ${mutationName}`);
-};
