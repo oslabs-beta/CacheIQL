@@ -1,6 +1,3 @@
-//Optional utility functions for caching
-
-
 import crypto from "crypto";
 
 export const hashKey = (string: string): string => {

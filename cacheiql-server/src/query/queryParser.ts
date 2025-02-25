@@ -1,8 +1,3 @@
-// Parses GraphQL queries into fields/subfields
-// Extracts which entities (types) are being queried
-
-
-
 import { GraphQLResolveInfo, SelectionNode, FieldNode, FragmentSpreadNode, InlineFragmentNode } from "graphql";
 
 /**

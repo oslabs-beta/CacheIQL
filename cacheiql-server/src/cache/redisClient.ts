@@ -1,7 +1,4 @@
-// redisClient.ts
 import { createClient, RedisClientType } from 'redis';
-
-// The type ensures that TypeScript will enforce the correct methods and properties on this object (e.g., .set, .get, .del).
 let client: RedisClientType | undefined
 
 /**
@@ -17,18 +14,15 @@ export const connectRedis = async (
 
     client.on("error", (err) => {
       console.error("Redis Client Error:", err);
-      client = undefined; // Reset client on failure
-      setTimeout(() => connectRedis(url), 5000); // Retry after 5 seconds
+      client = undefined; 
+      setTimeout(() => connectRedis(url), 5000); 
     });
-
     client.on("ready", () => {
       console.log("Redis is ready and connected.");
     });
-
     await client.connect();
   } catch (error) {
     console.error("Failed to connect to Redis:", error);
-    // throw new Error("Could not establish a Redis connection.");
     client = undefined
   }
 };

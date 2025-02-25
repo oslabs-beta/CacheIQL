@@ -1,4 +1,3 @@
-// Handles GraphQL introspection
 import {
   getIntrospectionQuery,
   graphql,
@@ -55,16 +54,12 @@ export function extractEntityRelationships(schema: GraphQLSchema) {
             .toString()
             .replace(/[[\]!]/g, "")
         )
-        .filter((relatedType) => relatedType !== typeName); // Avoid self-referencing
+        .filter((relatedType) => relatedType !== typeName);
     }
   }
 
-  // Store relationships globally for tracking dependencies
   entityRelationships = relationships;
   console.log("Extracted Entity Relationships:", entityRelationships);
-  console.log(
-    "Extracted Entity Relationships:",
-    JSON.stringify(entityRelationships, null, 2)
-  );
+ 
 
 }

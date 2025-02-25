@@ -1,7 +1,7 @@
 import { getRedisClient, connectRedis } from './redisClient';
 import { entityRelationships } from "../schema/introspection";
 
-// Ensures Redis is initialized before executing any caching operations.
+
 (async () => {
   await connectRedis();
 })();
@@ -29,14 +29,10 @@ export const setCacheQuery = async (
 ) => {
   try {
     const client =  await getRedisClient();
-    // const ttl = options.ttl || 10; // Default TTL: 1 hour
     const namespacedKey = `myApp:${key}`;
     if (data !== undefined) {
       await client.set(namespacedKey, JSON.stringify(data));
       await client.expire(namespacedKey, options.ttl ?? 60);
-      //Every time we cache a query result, we should track its key under the relevant entity.
-      // await trackCacheKey(entity, namespacedKey);
-      // Track dependencies per field
       await trackCacheDependency(namespacedKey, entity);
     } else {
        console.warn(`Skipping cache set for ${key} due to undefined data`);
@@ -58,24 +54,20 @@ export const getCachedQuery = async (
   try {
     const client = await getRedisClient();
     const cachedData = await client.get(`myApp:${key}`);
-
-    //code below might not be necessary. This could extend TTL on every read.(removed it to prevents cache from being extended indefinitely)
-    // client.expire(`myApp:${key}`, ttl);
     if (cachedData) {
       cacheHits++;
       try {
         return JSON.parse(cachedData);
       } catch (error) {
         console.error(`Error parsing cached data for key "${key}":`, error);
-        return null; // Return null instead of crashing
+        return null; 
       }
-
     }
     cacheMisses++;
     return null;
   } catch (error) {
     console.error(`Error retrieving cache for key "${key}":`, error);
-    return null; // Ensures request proceeds even if Redis fails
+    return null; 
   }
 };
 
@@ -137,17 +129,11 @@ export const trackCacheDependency = async (
   try {
     const client = await getRedisClient();
     const trackingKey = `dependencyKeys:${entity}`;
-
-    // Store cache key for the main entity
     await client.sAdd(trackingKey, cacheKey);
-
-    // Store cache keys for related entities (bidirectional)
     const relatedEntities = entityRelationships[entity] || [];
     for (const relatedEntity of relatedEntities) {
       const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
       await client.sAdd(relatedTrackingKey, cacheKey);
-
-      // Also track the reverse dependency (parent ↔ child)
       await client.sAdd(trackingKey, `dependencyKeys:${relatedEntity}`);
     }
   } catch (error) {
@@ -168,19 +154,13 @@ export const invalidateCacheForMutation = async (entity: string) => {
   try {
     const client = await getRedisClient();
     const trackingKey = `dependencyKeys:${entity}`;
-
-    // Get cache keys for the main entity
     let cacheKeys: string[] = await client.sMembers(trackingKey);
-
-    // Also find and remove cache keys for related entities
     const relatedEntities = entityRelationships[entity] || [];
     for (const relatedEntity of relatedEntities) {
       const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
       const relatedKeys: string[] = await client.sMembers(relatedTrackingKey);
       cacheKeys.push(...relatedKeys);
     }
-
-    // Remove all affected cache entries
     if (cacheKeys.length > 0) {
       await Promise.all(cacheKeys.map((key) => client.del(key)));
       console.log(
@@ -189,13 +169,11 @@ export const invalidateCacheForMutation = async (entity: string) => {
     } else {
       console.log(`No cache keys found for entity: ${entity}`);
     }
-    // Remove the dependency tracking key itself
-    await client.del(trackingKey); // Deletes `dependencyKeys:Person`
+    await client.del(trackingKey); 
     for (const relatedEntity of relatedEntities) {
       const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
       await client.del(relatedTrackingKey);
     }
-
     console.log(
       `Dependency tracking removed for ${entity} and related entities.`
     );
