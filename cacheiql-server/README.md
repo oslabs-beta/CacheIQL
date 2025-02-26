@@ -90,7 +90,7 @@ Run your Express server:
 ```bash
 node index.js
 ```
-Visit [http://localhost:3000/graphql](http://localhost:3000/graphql) to access GraphiQL and start testing the caching behavior.
+Visit [http://localhost:3000/graphql](http://localhost:3000/graphql) to access GraphQL and start testing the caching behavior.
 
 6. **Example Implementation**
 
