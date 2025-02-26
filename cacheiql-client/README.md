@@ -1,6 +1,6 @@
 # @cacheiql/client
 
-'@cacheiql/client is a lightweight client-side caching solution for GraphQL queries, designed to improve response times through local storage and request deduplication. By intercepting GraphQL requests, cacheiql checks the cache for stored responses and only fetches missing data from the server, minimizing redundant network requests. Its efficient key-value storage approach enables quick retrieval and cache updates while ensuring data consistency. CacheIQL seamlessly integrates with existing GraphQL clients, optimizing performance without requiring additional backend configuration.
+'@cacheiql/client is a lightweight client-side caching solution for GraphQL queries, designed to improve response times through local storage and request deduplication. By intercepting GraphQL requests, CacheIQL checks the cache for stored responses and only fetches missing data from the server, minimizing redundant network requests. Its efficient key-value storage approach enables quick retrieval and cache updates while ensuring data consistency. CacheIQL seamlessly integrates with existing GraphQL clients, optimizing performance without requiring additional backend configuration.
 
 @cacheiql/client is an npm package powered through  [OS Labs](https://github.com/oslabs-beta) , developed by [Vasean Annin](https://github.com/VaseanAnnin), [Gabriella Davoudpour
 ](https://github.com/gabyd613), [George German](https://github.com/GeorgeGerman29), [Pedram Kashani ](https://github.com/PedramKashani), and [Chris Matzen](https://github.com/matzec42).
@@ -16,14 +16,14 @@ Install [cacheiql/client](https://www.npmjs.com/package/cacheiql-client) from np
 
 **With Queries:**
 
-cacheiql's client side functionality begins with the user invoking the custom 'cacheIt' fetch and caching function, passing in the query. cacheiql begins by interpreting the query, and checking for its existence in the cache. If it is not found, cacheiql makes the query to GraphQL, storing the query: response object as a key value pair in local storage. If the query is found in local storage, the prior step is omitted, and cacheiql grabs the response object associated with the query, returning it back to the user with an increased latency of over 1000%. 
+CacheIQL's client side functionality begins with the user invoking the custom 'cacheIt' fetch and caching function, passing in the query. CacheIQL begins by interpreting the query, and checking for its existence in the cache. If it is not found, CacheIQL makes the query to GraphQL, storing the query: response object as a key value pair in local storage. If the query is found in local storage, the prior step is omitted, and cacheiql grabs the response object associated with the query, returning it back to the user with an increased latency of over 1000%. 
 
 **Image A** <br/>
 ![screenshot_2025-02-25_at_17 37 50_360](https://github.com/user-attachments/assets/23bba352-7865-4696-82cb-46fd1ab28b10) <br/> <br/>
 **Image B** <br/>
 ![screenshot_2025-02-25_at_17 38 28](https://github.com/user-attachments/assets/7e8bd6c2-90d5-4abe-b29b-19144cc82e6f)
 
-Here, we can see the difference in fetching speeds with the use of the native fetch API (image A) vs. cacheiql's caching feature (image B), an increase in response time from 728 ms to .8 ms.
+Here, we can see the difference in fetching speeds with the use of the native fetch API (image A) vs. CacheIQL's caching feature (image B), an increase in response time from 728 ms to .8 ms.
 
 **With Mutations:**
 
