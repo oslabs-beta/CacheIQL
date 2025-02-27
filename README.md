@@ -15,7 +15,7 @@ CacheIQL provides the developer with enhanced application speed and efficiency t
 CacheIQL is split into two npm packages:
 
 -Install [cacheiql/client](https://www.npmjs.com/package/cacheiql-client) from npm using the terminal command `npm i cacheiql-client` <br/>
--Install [cacheiql/server](https://www.npmjs.com/package/cacheiql-server) from npm using the terminal command npm `i cacheiql-server` <br/>
+-Install [cacheiql/server](https://www.npmjs.com/package/cacheiql-server) from npm using the terminal command `npm i cacheiql-server` <br/>
 
 ## Features
 
