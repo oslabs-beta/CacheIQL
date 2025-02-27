@@ -12,6 +12,8 @@ const Dashboard = () => {
   const [reviewText, setReviewText] = useState('');
   const [time, setTime] = useState(0);
   const getPeopleB = async () => {
+    setReviewInfo([]);
+    setCharacterinfo([]);
     const startTime: number = performance.now();
     const responseCharacter: ResponseObject = await cacheIt({
       endpoint: 'http://localhost:3000/graphql',
@@ -37,6 +39,9 @@ const Dashboard = () => {
   };
 
   const getReviews = async () => {
+    setReviewInfo([]);
+    setCharacterinfo([]);
+    const startTime: number = performance.now();
     const responseReview: ResponseObject = await cacheIt({
       endpoint: 'http://localhost:3000/graphql',
       query: `
@@ -50,6 +55,8 @@ const Dashboard = () => {
       time: 3600,
     });
     setReviewInfo(responseReview.data.reviews);
+    const endTime: number = performance.now();
+    setTime(endTime - startTime);
   };
 
   const handleReview = (e: any) => {
@@ -109,8 +116,12 @@ const Dashboard = () => {
 
   return (
     <>
-      <button onClick={getPeopleB} className='getPeople'></button>
-      <button onClick={getReviews} className='getPeople'></button>
+      <button onClick={getPeopleB} className='getPeople'>
+        Get People
+      </button>
+      <button onClick={getReviews} className='getPeople'>
+        Get Reviews
+      </button>
       <div className='hitmissbox'>
         <HitMiss time={time} />
       </div>
@@ -129,8 +140,9 @@ const Dashboard = () => {
         type='text'
         placeholder='Type review here'
         onChange={handleReview}
+        className='inputBox'
       />
-      <button type='submit' onClick={createReview}>
+      <button type='submit' onClick={createReview} className='submit'>
         Submit Your Review
       </button>
     </>

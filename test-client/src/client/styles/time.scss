@@ -1,10 +1,12 @@
 .timebox {
-  margin: 15px;
+  position: fixed; /* Keeps it in place when scrolling */
+  top: 15px; /* Positions it near the top */
+  right: 15px; /* Positions it near the right */
   background-color: white;
   padding: 0.75rem;
-  border: 1px solid hsl(138, 74%, 77%);
+  border: 1px solid #170a1c;
   border-radius: 8px;
-  box-shadow: 10px 10px 2px rgb(209, 209, 209);
+  z-index: 1000; /* Ensures it's above other elements */
 }
 
 .hitmissbox {
@@ -13,4 +15,3 @@
   position: fixed;
   z-index: 10;
 }
-

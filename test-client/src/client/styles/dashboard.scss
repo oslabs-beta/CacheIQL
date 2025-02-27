@@ -1,3 +1,61 @@
+/*
+C19AB7 - Lilac for writing and buttons
+0B7189 - Creulean TBD
+85C7F2 - Light Sky blue TBD
+170A1C - Dark Purple for background
+2F2963 - Space Cadet not sure yet probably for highlights
+*/
+
+html {
+  font-family: 'Source Code Pro', monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  color: #c19ab7;
+}
+
+body {
+  height: 100vh;
+  background-color: #170a1c;
+}
+
+button {
+  font-family: 'Source Code Pro', monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  background-color: white;
+  color: #c19ab7;
+  border: none;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+  cursor: pointer;
+}
+.inputBox {
+  background-color: #2f2963; /* Space Cadet */
+  color: #c19ab7; /* Lilac */
+  border: 2px solid #c19ab7;
+  padding: 0.75rem;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 1rem;
+  font-weight: 300;
+  border-radius: 8px;
+  outline: none;
+  width: 100%;
+  max-width: 400px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.inputBox::placeholder {
+  color: #85c7f2; /* Light Sky Blue */
+  opacity: 0.7;
+}
+
+.inputBox:focus {
+  border-color: #85c7f2; /* Light Sky Blue */
+  background-color: #0b7189; /* Cerulean */
+  color: white;
+}
 
 .cardBox {
   display: flex;
@@ -23,6 +81,35 @@ h3 {
   font-weight: 700;
   line-height: 15.4px;
 }
+.submit {
+  background-color: white; /* Lilac */
+  color: #c19ab7; /* Dark Purple */
+  border: 2px solid #c19ab7;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 1rem;
+  font-weight: 300;
+  border-radius: 8px;
+  margin-left: 0.5rem;
+}
+
+button:hover {
+  background-color: #85c7f2; /* Light Sky Blue */
+  color: #170a1c;
+  border-color: #85c7f2;
+}
+
+button:active {
+  background-color: #0b7189; /* Cerulean */
+  color: white;
+  border-color: #0b7189;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 p {
   font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
   font-size: 14px;
@@ -38,12 +125,4 @@ blockquote {
   font-variant: normal;
   font-weight: 400;
   line-height: 30px;
-}
-pre {
-  font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
-  font-size: 13px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 18.5714px;
 }
