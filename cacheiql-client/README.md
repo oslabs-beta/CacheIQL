@@ -10,6 +10,48 @@
 Install [cacheiql/client](https://www.npmjs.com/package/cacheiql-client) from npm using the terminal command: `npm i cacheiql-client` <br/>
 @cacheiql/client will be added as a dependency to your package.json file.
 
+## Import CacheIQL-Server
+
+**1. Add the following import to your .jsx file:**
+
+CommonJS:
+``` js
+const { cacheIt } = require('cacheiql-client');
+```
+ES6+:
+``` js
+import { cacheIt } from 'cacheiql-client';
+```
+
+**2. Pass into the cacheIt function your desired endpoint, query, and TTL (time-to-live)**
+
+``` js
+const responseCharacter: ResponseObject = await cacheIt({
+      endpoint: 'http://localhost:3000/graphql',
+      query: `
+            {
+            people{
+            _id
+            gender
+            birth_year
+            skin_color
+            hair_color
+            name
+            species_id
+            homeworld_id
+            }
+          }`,
+      time: 3600,
+    });
+```
+**3. Start the server:** <br/>
+ex. <br/>
+`npm run start` <br/>
+`npm run serv`
+
+**4. Visit http://localhost:3000/graphql to access GraphQL and start testing the caching functionality.**
+
+
 ## How It Works
 
 <img width="962" alt="Screenshot 2025-02-25 at 6 47 03 PM" src="https://github.com/user-attachments/assets/e3d60385-a6c5-46af-9536-92021ecea3aa" />
