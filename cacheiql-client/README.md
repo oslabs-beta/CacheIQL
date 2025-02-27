@@ -44,10 +44,10 @@ const responseCharacter: ResponseObject = await cacheIt({
       time: 3600,
     });
 ```
-**3. Start the server:** <br/>
-ex. <br/>
-`npm run start` <br/>
-`npm run serv`
+**3. Start the server by running the necessary commands in your terminal:** <br/> <br/>
+ex. `npm run start` | `npm run serv`
+
+<br/>
 
 **4. Visit http://localhost:3000/graphql to access GraphQL and start testing the caching functionality.**
 
