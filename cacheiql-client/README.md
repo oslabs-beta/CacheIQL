@@ -23,6 +23,7 @@ ES6+:
 import { cacheIt } from 'cacheiql-client';
 ```
 
+
 **2. Pass into the cacheIt function your desired endpoint, query, and TTL (time-to-live)**
 
 ``` js
@@ -68,5 +69,6 @@ CacheIQL's client side functionality begins with the user invoking the custom 'c
 Here, we can see the difference in fetching speeds with the use of the native fetch API (image A) vs. CacheIQL's caching feature (image B), an increase in response time from 728 ms to .8 ms.
 
 **With Mutations:**
+
 
 Through the use of introspection, cacheiql is able to extract the query name off of the AST to determine whether or not a mutation keyword is used. If so, cacheiql implements cache invalidation, removing the initial query: response object associated with the mutation within miliseconds, allowing the user to re-update the cache with the most up to date form of data avaliable.
