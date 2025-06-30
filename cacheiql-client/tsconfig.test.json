@@ -1,0 +1,10 @@
+// tsconfig for Jest specifically
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+    "types": ["jest"],
+    "noEmit": true,
+    "rootDir": "."
+    },
+    "include": ["tests/**/*", "src/**/*"]
+}

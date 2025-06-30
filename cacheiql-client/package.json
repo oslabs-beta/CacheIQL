@@ -26,7 +26,12 @@
   "dependencies": {
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
+    "jest": "^30.0.3",
     "tsc": "^2.0.4",
-    "typescript": "^5.7.2"
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10"
   }
 }

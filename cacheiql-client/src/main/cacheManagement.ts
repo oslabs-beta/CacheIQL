@@ -1,5 +1,5 @@
-import { Query, Mutation } from './types';
-import { generateKey } from './generatekey';
+import { Query, Mutation } from '../main/types';
+import { generateKey } from '../main/generatekey';
 
 
 // cacheManager --- function for time-based cache management (removes cached data from local storage)

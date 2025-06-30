@@ -124,7 +124,7 @@
     "target": "ESNext", // Output modern JS
     "rootDir": "./src", // Input folder for source files
     "strict": true, // Enable strict type-checking
-    "esModuleInterop": true // Ensure compatibility with CommonJS
+    "esModuleInterop": true, // Ensure compatibility with CommonJS
   },
   "include": ["src/**/*"], // Include all files in src
   "exclude": ["node_modules", "dist"] // Exclude dependencies and output folder
