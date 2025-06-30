@@ -5,7 +5,9 @@ import { cacheiqItType, queryArray, mutationArray } from '../main/types';
 
 // mock of cacheiqIt w/ fake data (give cacheIt )
 jest.mock('../main/export', () => {
-    cacheiqIt: jest.fn();
+    return {
+        cacheiqIt: jest.fn()
+    };
 })
 
 describe('cacheIt', () => {

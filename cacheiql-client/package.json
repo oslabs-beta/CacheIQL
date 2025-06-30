@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "watch": "tsc --watch"
   },
   "repository": {
@@ -32,6 +32,8 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/mocha": "^10.0.10"
+    "@types/mocha": "^10.0.10",
+    "jest-environment-jsdom": "^30.0.2",
+    "ts-jest": "^29.4.0"
   }
 }
