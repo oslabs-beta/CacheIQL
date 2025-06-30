@@ -3,7 +3,7 @@ import { cacheiqIt } from '../main/export';
 import { cacheIt } from '../main/index';
 import { cacheiqItType, queryArray, mutationArray } from '../main/types';
 
-// mock of cacheiqIt w/ fake data (give cacheIt )
+// mock of cacheiqIt
 jest.mock('../main/export', () => {
     return {
         cacheiqIt: jest.fn()
