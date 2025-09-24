@@ -1,7 +1,7 @@
-import { cacheManager } from '../main/cacheManagement';
+import { cacheManager, checkAndSaveToCache } from '../main/cacheManagement';
 import { Query } from '../main/types';
 
-// RE: cacheManager --- needs to invoke a setTimeout; function clears local storage/it's empty (need fake/mock data in local storage of jest DOM)
+// cacheManager --- needs to invoke a setTimeout; function clears local storage/it's empty (need fake/mock data in local storage of jest DOM)
 
 // mock items for functionality related to local storage
 const mockSetItem = jest.fn();
@@ -115,8 +115,99 @@ describe('cacheManager', () => {
 
 })
 
-// describe('checkAndSaveToCache', () => {
+// RE: checkAndSaveToCache
+describe('checkAndSaveToCache', () => {
+    // make mock data to be stored
+    let mockStorage: { [key: string]: string } = {};
 
-// })
+    beforeEach(() => {
+        mockSetItem.mockClear();
+        mockGetItem.mockClear();
+        mockRemoveItem.mockClear();
 
-// RE: checkAndSaveToCache --- needs to check and fetch an existing query that is cached from local storage (see lines 29, 35), return true; needs to test if there is no data in local storage but the function is passed a response, to create and set a new item in local storage; needs to also cover when data doesn't exist (no query & its response) and return false
+        mockStorage = {
+        '{ people { name id mass gender } }': JSON.stringify({
+            data: {
+                    people: [
+                        { name: 'Luke Skywalker', id: 1, mass: '75', gender: 'male' },
+                        { name: 'Darth Vader', id: 2, mass: '136', gender: 'male' }
+                    ]
+                }
+            }),
+        '{ review { _id:ID! movie_id: Int! review:String! } }': JSON.stringify({
+            data: {
+                    review: [
+                        { _id: '1', movie_id: 42, review: 'Great movie!' }
+                    ]
+                }
+            }),
+        };
+
+        // mock local storage as a property on DOM window
+        Object.defineProperty(window, 'localStorage', {
+            value: {
+                get length() {
+                    return Object.keys(mockStorage).length;
+                },
+                key: (i: number) => Object.keys(mockStorage)[i],
+                setItem: (key: string, value: string) => {
+                    mockSetItem(key, value);
+                    mockStorage[key] = value;
+                },
+                getItem: (key: string) => {
+                    mockGetItem(key);
+                    return mockStorage[key];
+                },
+                removeItem: (key: string) => {
+                    mockRemoveItem(key);
+                    delete mockStorage[key];
+                },
+            },
+            configurable: true,
+        });
+    })
+
+    // needs to check and fetch an existing query that is cached from local storage (see lines 29, 35), return true
+    it('returns true if an item exists in local storage', () => {
+        const queryKey = `{ people { name id mass gender } }`;
+        const result = checkAndSaveToCache(queryKey);
+
+        expect(mockGetItem).toHaveBeenCalledWith(queryKey);
+        expect(result).toBe(true);
+        expect(mockSetItem).not.toHaveBeenCalled();
+    })
+    
+    // needs to test if there isn't a query stored in local storage but the function is passed a response (from a DB call in export.ts), then it creates and set a new item in local storage
+    it('sets new item in local storage and returns true if item does not exist but DB response is passed in', () => {
+        const queryKey = `{ planets { name id climate } }`;
+        const response = { data: { planets: [{ name: 'Tatooine', id: 3, climate: 'arid' }] } };
+
+        // double check that storage is clear of item before calling the function
+        delete mockStorage[queryKey];
+
+        // call function w/ passed in query and response
+        const result = checkAndSaveToCache(queryKey, response);
+
+        expect(mockGetItem).toHaveBeenCalledWith(queryKey);
+        expect(mockSetItem).toHaveBeenCalledWith(queryKey, JSON.stringify(response));
+        expect(result).toBe(true);
+    })
+
+    // needs to also cover when data doesn't exist (no query & its response) and return false
+    it('returns false if item does not exist and there is no response passed in', () => {
+        const queryKey = `{ starships { id name model } }`;
+
+        delete mockStorage[queryKey];
+
+        const result = checkAndSaveToCache(queryKey);
+
+        expect(mockGetItem).toHaveBeenCalledWith(queryKey);
+        expect(mockSetItem).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+    })
+
+    it('returns "query is null" if null query is passed in', () => {
+        const result = checkAndSaveToCache(null as any);
+        expect(result).toBe('query is null');
+    })
+})
