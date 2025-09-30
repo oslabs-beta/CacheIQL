@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1758748868280" clover="3.2.0">
+  <project timestamp="1758748868280" name="All files">
+    <metrics statements="114" coveredstatements="109" conditionals="51" coveredconditionals="41" methods="18" coveredmethods="18" elements="183" coveredelements="168" complexity="0" loc="114" ncloc="114" packages="1" files="6" classes="6"/>
+    <file name="cacheManagement.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/cacheManagement.ts">
+      <metrics statements="20" coveredstatements="20" conditionals="11" coveredconditionals="10" methods="3" coveredmethods="3"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="6" count="1" type="cond" truecount="0" falsecount="1"/>
+      <line num="9" count="4" type="stmt"/>
+      <line num="10" count="2" type="stmt"/>
+      <line num="11" count="2" type="stmt"/>
+      <line num="12" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="13" count="2" type="stmt"/>
+      <line num="14" count="2" type="stmt"/>
+      <line num="21" count="1" type="stmt"/>
+      <line num="26" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="27" count="1" type="stmt"/>
+      <line num="29" count="3" type="stmt"/>
+      <line num="32" count="3" type="stmt"/>
+      <line num="35" count="3" type="stmt"/>
+      <line num="37" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="38" count="1" type="stmt"/>
+      <line num="42" count="2" type="cond" truecount="4" falsecount="0"/>
+      <line num="45" count="1" type="stmt"/>
+      <line num="46" count="1" type="stmt"/>
+      <line num="51" count="1" type="stmt"/>
+    </file>
+    <file name="errorhandling.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/errorhandling.ts">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="8" type="stmt"/>
+    </file>
+    <file name="export.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/export.ts">
+      <metrics statements="54" coveredstatements="50" conditionals="32" coveredconditionals="25" methods="5" coveredmethods="5"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="8" count="1" type="stmt"/>
+      <line num="14" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="15" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="16" count="1" type="stmt"/>
+      <line num="24" count="5" type="cond" truecount="1" falsecount="1"/>
+      <line num="25" count="5" type="stmt"/>
+      <line num="26" count="5" type="stmt"/>
+      <line num="28" count="5" type="cond" truecount="4" falsecount="0"/>
+      <line num="29" count="3" type="stmt"/>
+      <line num="37" count="2" type="stmt"/>
+      <line num="40" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="41" count="1" type="stmt"/>
+      <line num="42" count="1" type="stmt"/>
+      <line num="45" count="1" type="stmt"/>
+      <line num="46" count="1" type="stmt"/>
+      <line num="47" count="1" type="stmt"/>
+      <line num="49" count="2" type="stmt"/>
+      <line num="53" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="54" count="0" type="stmt"/>
+      <line num="57" count="0" type="stmt"/>
+      <line num="59" count="1" type="stmt"/>
+      <line num="60" count="1" type="stmt"/>
+      <line num="63" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="64" count="2" type="stmt"/>
+      <line num="67" count="2" type="stmt"/>
+      <line num="73" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="74" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="75" count="1" type="stmt"/>
+      <line num="82" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="83" count="4" type="stmt"/>
+      <line num="85" count="4" type="cond" truecount="4" falsecount="0"/>
+      <line num="86" count="2" type="stmt"/>
+      <line num="94" count="2" type="stmt"/>
+      <line num="97" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="98" count="1" type="stmt"/>
+      <line num="99" count="1" type="stmt"/>
+      <line num="101" count="1" type="stmt"/>
+      <line num="102" count="1" type="stmt"/>
+      <line num="103" count="1" type="stmt"/>
+      <line num="104" count="1" type="stmt"/>
+      <line num="106" count="2" type="stmt"/>
+      <line num="109" count="2" type="stmt"/>
+      <line num="112" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="113" count="0" type="stmt"/>
+      <line num="116" count="0" type="stmt"/>
+      <line num="118" count="1" type="stmt"/>
+      <line num="121" count="1" type="stmt"/>
+      <line num="124" count="1" type="cond" truecount="1" falsecount="1"/>
+      <line num="125" count="1" type="stmt"/>
+      <line num="128" count="1" type="stmt"/>
+    </file>
+    <file name="generatekey.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/generatekey.ts">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="6" count="1" type="stmt"/>
+      <line num="8" count="3" type="stmt"/>
+    </file>
+    <file name="index.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/index.ts">
+      <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="11" count="1" type="stmt"/>
+    </file>
+    <file name="mutationHandler.ts" path="/Users/christophermatzen/Desktop/documents/projects/CacheIQL/cacheiql-client/src/main/mutationHandler.ts">
+      <metrics statements="33" coveredstatements="32" conditionals="8" coveredconditionals="6" methods="7" coveredmethods="7"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="8" count="1" type="stmt"/>
+      <line num="12" count="3" type="stmt"/>
+      <line num="13" count="3" type="stmt"/>
+      <line num="15" count="3" type="stmt"/>
+      <line num="42" count="3" type="stmt"/>
+      <line num="44" count="3" type="stmt"/>
+      <line num="48" count="3" type="stmt"/>
+      <line num="74" count="3" type="stmt"/>
+      <line num="76" count="3" type="stmt"/>
+      <line num="78" count="3" type="stmt"/>
+      <line num="79" count="3" type="stmt"/>
+      <line num="80" count="3" type="stmt"/>
+      <line num="81" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="82" count="2" type="stmt"/>
+      <line num="83" count="2" type="stmt"/>
+      <line num="84" count="2" type="stmt"/>
+      <line num="85" count="2" type="stmt"/>
+      <line num="91" count="1" type="stmt"/>
+      <line num="93" count="7" type="stmt"/>
+      <line num="95" count="7" type="stmt"/>
+      <line num="101" count="4" type="stmt"/>
+      <line num="104" count="4" type="stmt"/>
+      <line num="110" count="4" type="stmt"/>
+      <line num="112" count="4" type="cond" truecount="3" falsecount="1"/>
+      <line num="114" count="4" type="stmt"/>
+      <line num="121" count="4" type="stmt"/>
+      <line num="123" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="124" count="3" type="stmt"/>
+      <line num="125" count="3" type="stmt"/>
+      <line num="127" count="0" type="stmt"/>
+    </file>
+  </project>
+</coverage>
