@@ -1,9 +1,8 @@
-
 import {
   connectRedis,
   getRedisClient,
   closeRedisConnection,
-} from "../src/redisClient";
+} from "../src/cache/redisClient";
 
 describe("Redis Client", () => {
   beforeAll(async () => {
@@ -14,18 +13,16 @@ describe("Redis Client", () => {
     await closeRedisConnection();
   });
 
-  it("should connect to Redis and return a client instance", () => {
-    const client = getRedisClient();
+  it("should connect to Redis and return a client instance", async () => {
+    const client = await getRedisClient();
     expect(client).toBeDefined();
   });
 
-  it("should throw an error if Redis client is not connected", async () => {
+  it("should reconnect if Redis client is not connected", async () => {
     await closeRedisConnection(); // Close the connection
-    expect(() => getRedisClient()).toThrowError(
-      "Redis client is not connected"
-    );
-
-    // Reconnect for subsequent tests
-    await connectRedis();
+    // getRedisClient should automatically reconnect
+    const client = await getRedisClient();
+    expect(client).toBeDefined();
+    expect(client.isOpen).toBe(true);
   });
 });

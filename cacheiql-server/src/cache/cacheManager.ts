@@ -1,11 +1,18 @@
-import { getRedisClient, connectRedis } from './redisClient';
+import { getRedisClient, connectRedis } from "./redisClient";
 import { entityRelationships } from "../schema/introspection";
+import { getNamespace } from "./config";
 
-
-(async () => {
-  await connectRedis();
-})();
-
+// Only auto-connect if not in test environment
+// Check for Jest globals or NODE_ENV to avoid auto-connecting during tests
+if (
+  process.env.NODE_ENV !== "test" &&
+  typeof global.jest === "undefined" &&
+  typeof jest === "undefined"
+) {
+  (async () => {
+    await connectRedis();
+  })();
+}
 
 interface CacheOptions {
   ttl?: number; // Time to live in seconds
@@ -25,18 +32,29 @@ export const setCacheQuery = async (
   key: string,
   data: any,
   entity: string,
-  options: CacheOptions = { ttl: 60}
+  options: CacheOptions = { ttl: 60 }
 ) => {
+  if (!key || typeof key !== "string") {
+    throw new Error("Cache key must be a non-empty string");
+  }
+  if (!entity || typeof entity !== "string") {
+    throw new Error("Entity must be a non-empty string");
+  }
+  const ttl = options.ttl ?? 60;
+  if (typeof ttl !== "number" || ttl < 0 || !Number.isInteger(ttl)) {
+    throw new Error("TTL must be a non-negative integer");
+  }
   try {
-    const client =  await getRedisClient();
-    const namespacedKey = `myApp:${key}`;
+    const client = await getRedisClient();
+    const namespace = getNamespace();
+    const namespacedKey = `${namespace}:${key}`;
     if (data !== undefined) {
       await client.set(namespacedKey, JSON.stringify(data));
-      await client.expire(namespacedKey, options.ttl ?? 60);
+      await client.expire(namespacedKey, ttl);
       await trackCacheDependency(namespacedKey, entity);
     } else {
-       console.warn(`Skipping cache set for ${key} due to undefined data`);
-    }   
+      console.warn(`Skipping cache set for ${key} due to undefined data`);
+    }
   } catch (error) {
     console.error(`Error caching query for key "${key}":`, error);
     throw new Error(`Cache operation failed for key "${key}"`);
@@ -48,26 +66,29 @@ export const setCacheQuery = async (
  * @param key - The key to retrieve.
  * @returns The cached data or null if not found.
  */
-export const getCachedQuery = async (
-  key: string
-): Promise<any | null> => {
+export const getCachedQuery = async (key: string): Promise<any | null> => {
+  if (!key || typeof key !== "string") {
+    console.warn("Invalid cache key provided to getCachedQuery");
+    return null;
+  }
   try {
     const client = await getRedisClient();
-    const cachedData = await client.get(`myApp:${key}`);
+    const namespace = getNamespace();
+    const cachedData = await client.get(`${namespace}:${key}`);
     if (cachedData) {
       cacheHits++;
       try {
         return JSON.parse(cachedData);
       } catch (error) {
         console.error(`Error parsing cached data for key "${key}":`, error);
-        return null; 
+        return null;
       }
     }
     cacheMisses++;
     return null;
   } catch (error) {
     console.error(`Error retrieving cache for key "${key}":`, error);
-    return null; 
+    return null;
   }
 };
 
@@ -76,15 +97,18 @@ export const getCachedQuery = async (
  * @param key - The key to remove from cache.
  */
 export const invalidateCache = async (key: string) => {
+  if (!key || typeof key !== "string") {
+    throw new Error("Cache key must be a non-empty string");
+  }
   try {
     const client = await getRedisClient();
-    await client.del(`myApp:${key}`);
+    const namespace = getNamespace();
+    await client.del(`${namespace}:${key}`);
   } catch (error) {
     console.error(`Error invalidating cache for key "${key}":`, error);
     throw error;
   }
 };
-
 
 /**
  * Retrieves data from cache or fetches from the database.
@@ -105,14 +129,13 @@ export const getData = async (
       return cacheData;
     }
     const dbData = await fetchFromDb();
-    await setCacheQuery(key, dbData, entity, {ttl:60});
+    await setCacheQuery(key, dbData, entity, { ttl: 60 });
     return dbData;
   } catch (error) {
     console.error("Error fetching data", error);
     throw error;
   }
 };
-
 
 /**
  * Tracks cache dependencies per entity.
@@ -126,15 +149,21 @@ export const trackCacheDependency = async (
   cacheKey: string,
   entity: string
 ) => {
+  if (!cacheKey || !entity) {
+    console.warn("Invalid parameters provided to trackCacheDependency");
+    return;
+  }
   try {
     const client = await getRedisClient();
-    const trackingKey = `dependencyKeys:${entity}`;
+    const namespace = getNamespace();
+    const trackingKey = `${namespace}:dependencyKeys:${entity}`;
     await client.sAdd(trackingKey, cacheKey);
+
+    // Track relationships without storing tracking keys in the set (fixes memory leak)
     const relatedEntities = entityRelationships[entity] || [];
     for (const relatedEntity of relatedEntities) {
-      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
+      const relatedTrackingKey = `${namespace}:dependencyKeys:${relatedEntity}`;
       await client.sAdd(relatedTrackingKey, cacheKey);
-      await client.sAdd(trackingKey, `dependencyKeys:${relatedEntity}`);
     }
   } catch (error) {
     console.error(
@@ -144,43 +173,63 @@ export const trackCacheDependency = async (
   }
 };
 
-
 /**
  * Invalidates cache entries for a specific entity after a mutation.
  * @param entity - The entity whose cache entries should be invalidated.
  */
 
 export const invalidateCacheForMutation = async (entity: string) => {
+  if (!entity || typeof entity !== "string") {
+    console.warn("Invalid entity provided to invalidateCacheForMutation");
+    return;
+  }
   try {
     const client = await getRedisClient();
-    const trackingKey = `dependencyKeys:${entity}`;
-    let cacheKeys: string[] = await client.sMembers(trackingKey);
+    const namespace = getNamespace();
+    const trackingKey = `${namespace}:dependencyKeys:${entity}`;
+
+    // Collect all cache keys to invalidate
+    const cacheKeysSet = new Set<string>();
+    const trackingKeysToDelete: string[] = [trackingKey];
+
+    // Get cache keys for the main entity
+    const mainEntityKeys: string[] = await client.sMembers(trackingKey);
+    mainEntityKeys.forEach((key) => cacheKeysSet.add(key));
+
+    // Get cache keys for related entities
     const relatedEntities = entityRelationships[entity] || [];
     for (const relatedEntity of relatedEntities) {
-      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
+      const relatedTrackingKey = `${namespace}:dependencyKeys:${relatedEntity}`;
+      trackingKeysToDelete.push(relatedTrackingKey);
       const relatedKeys: string[] = await client.sMembers(relatedTrackingKey);
-      cacheKeys.push(...relatedKeys);
+      relatedKeys.forEach((key) => cacheKeysSet.add(key));
     }
-    if (cacheKeys.length > 0) {
-      await Promise.all(cacheKeys.map((key) => client.del(key)));
+
+    // Batch delete all cache keys (more efficient than individual deletes)
+    const cacheKeysArray = Array.from(cacheKeysSet);
+    if (cacheKeysArray.length > 0) {
+      // Use pipeline for better performance
+      const pipeline = client.multi();
+      cacheKeysArray.forEach((key) => pipeline.del(key));
+      await pipeline.exec();
       console.log(
-        `Invalidated ${cacheKeys.length} cache keys for ${entity} and related entities.`
+        `Invalidated ${cacheKeysArray.length} cache keys for ${entity} and related entities.`
       );
     } else {
       console.log(`No cache keys found for entity: ${entity}`);
     }
-    await client.del(trackingKey); 
-    for (const relatedEntity of relatedEntities) {
-      const relatedTrackingKey = `dependencyKeys:${relatedEntity}`;
-      await client.del(relatedTrackingKey);
+
+    // Delete tracking keys
+    if (trackingKeysToDelete.length > 0) {
+      const trackingPipeline = client.multi();
+      trackingKeysToDelete.forEach((key) => trackingPipeline.del(key));
+      await trackingPipeline.exec();
+      console.log(
+        `Dependency tracking removed for ${entity} and related entities.`
+      );
     }
-    console.log(
-      `Dependency tracking removed for ${entity} and related entities.`
-    );
   } catch (error) {
     console.error(`Error invalidating cache for entity "${entity}":`, error);
+    // Don't throw - allow mutation to complete even if cache invalidation fails
   }
 };
-
-
-
