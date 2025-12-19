@@ -1,3 +1,8 @@
+/**
+ * Performance Benchmark: Cache Hit Rate Test
+ * This file is for benchmarking purposes and is not part of the test suite.
+ * Run with: npx ts-node tests/testCacheHitRate.ts
+ */
 import {
   getCachedQuery,
   setCacheQuery,

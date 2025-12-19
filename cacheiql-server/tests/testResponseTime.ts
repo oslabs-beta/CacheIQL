@@ -1,3 +1,8 @@
+/**
+ * Performance Benchmark: Response Time Test
+ * This file is for benchmarking purposes and is not part of the test suite.
+ * Run with: npx ts-node tests/testResponseTime.ts
+ */
 import { getCachedQuery, setCacheQuery } from "../src/cache/cacheManager";
 
 const testKey = "post:1";

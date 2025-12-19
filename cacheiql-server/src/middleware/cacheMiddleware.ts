@@ -4,14 +4,10 @@ import {
   trackCacheDependency,
   invalidateCacheForMutation,
 } from "../cache/cacheManager";
-import {
-  extractEntityRelationships,
-  entityRelationships,
-} from "../schema/introspection"; 
+import { extractEntityRelationships } from "../schema/introspection";
 import { GraphQLResolveInfo, GraphQLSchema } from "graphql";
 import { hashKey } from "../cache/cacheUtils";
 import { parseQueryFields } from "../query/queryParser";
-
 
 let introspectionInitialized = false;
 
@@ -33,22 +29,22 @@ export const cacheMiddleware = (
     wrappedResolvers[key] = async (
       parent: any,
       args: any,
-      info?: GraphQLResolveInfo,
-      context?: any
+      context?: any,
+      info?: GraphQLResolveInfo
     ): Promise<any> => {
       if (!info) {
         console.error(
           "Missing GraphQLResolveInfo in cacheMiddleware. Skipping caching."
         );
-        return await resolve(parent, args, info, context);
+        return await resolve(parent, args, context, info);
       }
       const parsedFields = parseQueryFields(info);
       const entityType = info.returnType.toString().replace(/[[\]!]/g, ""); // Extract entity name
       const entity = entityType.charAt(0).toUpperCase() + entityType.slice(1); // Capitalize first letter
       const sortedArgs = JSON.stringify(args, Object.keys(args).sort()); // Ensure consistent key order
-       const rawKey = `${entity}:${
-         info.fieldName
-       }:${sortedArgs}:${JSON.stringify(parsedFields)}`;
+      const rawKey = `${entity}:${
+        info.fieldName
+      }:${sortedArgs}:${JSON.stringify(parsedFields)}`;
       const cacheKey = hashKey(rawKey);
 
       // Handle Queries (Caching)
@@ -94,5 +90,3 @@ export const cacheMiddleware = (
   });
   return wrappedResolvers;
 };
-
-

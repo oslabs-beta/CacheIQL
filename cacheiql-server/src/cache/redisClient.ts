@@ -1,21 +1,25 @@
 import { createClient, RedisClientType } from 'redis';
+import { getConfig } from './config';
+
 let client: RedisClientType | undefined
 
 /**
  * Connects to the Redis server
- * @param url - The Redis server URL (default: redis://localhost:6379)
+ * @param url - The Redis server URL (optional, uses config if not provided)
  */
 export const connectRedis = async (
-  url: string = process.env.REDIS_URL || 'redis://localhost:6379'
+  url?: string
 ): Promise<void> => {
+  const config = getConfig();
+  const redisUrl = url || config.redisUrl;
   if (client && client.isOpen) return; 
   try {
-    client = createClient({ url });
+    client = createClient({ url: redisUrl });
 
     client.on("error", (err) => {
       console.error("Redis Client Error:", err);
       client = undefined; 
-      setTimeout(() => connectRedis(url), 5000); 
+      setTimeout(() => connectRedis(redisUrl), 5000); 
     });
     client.on("ready", () => {
       console.log("Redis is ready and connected.");

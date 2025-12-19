@@ -1,3 +1,8 @@
+/**
+ * Performance Benchmark: Database Load Reduction Test
+ * This file is for benchmarking purposes and is not part of the test suite.
+ * Run with: npx ts-node tests/testDBLoadReduction.ts
+ */
 import { getCachedQuery, setCacheQuery } from "../src/cache/cacheManager";
 
 // Simulated database call counter
