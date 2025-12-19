@@ -1,6 +1,6 @@
 # CacheIQL Server
 
-CacheIQL is a server-side caching solution for GraphQL applications designed to enhance performance by reducing redundant query executions. It integrates seamlessly into your GraphQL server, leveraging Redis to cache responses and intelligently manage cache invalidation.
+**cacheiql-server** is a middleware that is simple to implement, providing a server-side caching solution for GraphQL applications designed to enhance performance by reducing redundant query executions. It seamlessly integrates into your GraphQL server, caching queries and intelligently invalidating them after a mutation occurs, all while leveraging Redis to manage cache responses efficiently.
 
 ## Features
 
