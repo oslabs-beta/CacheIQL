@@ -2,3 +2,9 @@ node_modules/
 .env
 .vscode/
 dist/
+*.rdb
+dump.rdb
+.DS_Store
+*.log
+coverage/
+.nyc_output/
